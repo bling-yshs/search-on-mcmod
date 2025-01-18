@@ -4,14 +4,16 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import lombok.SneakyThrows;
 import net.minecraft.Util;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -79,7 +81,7 @@ public class SearchOnMcmod {
     }
 
     @SubscribeEvent
-    public void onKeyPressed(ScreenEvent.KeyPressed.Post event) {
+    public void onKeyPressed(ScreenEvent.KeyboardKeyPressedEvent.Post event) {
         int keyCode = event.getKeyCode();
         InputConstants.Key key = SEARCH_ON_MCMOD_KEY.getKey();
         if (keyCode == key.getValue() && keyDown == false) {
@@ -89,7 +91,7 @@ public class SearchOnMcmod {
     }
 
     @SubscribeEvent
-    public void onKeyReleased(ScreenEvent.KeyReleased.Post event) {
+    public void onKeyReleased(ScreenEvent.KeyboardKeyReleasedEvent.Post event) {
         int keyCode = event.getKeyCode();
         if (keyCode == SEARCH_ON_MCMOD_KEY.getKey().getValue()) {
             keyDown = false;
@@ -101,8 +103,8 @@ public class SearchOnMcmod {
     public static class ClientModEvents {
 
         @SubscribeEvent
-        public static void registerBindings(RegisterKeyMappingsEvent event) {
-            event.register(SEARCH_ON_MCMOD_KEY);
+        public static void setup(final FMLCommonSetupEvent event) {
+            ClientRegistry.registerKeyBinding(SEARCH_ON_MCMOD_KEY);
         }
 
     }

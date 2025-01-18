@@ -10,14 +10,14 @@ logoFile="icon.png"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
 
-[[dependencies.${ mod_id }]]
+[[dependencies.searchonmcmod]]
 modId = "forge"
 mandatory = true
 versionRange = "${forge_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.${ mod_id }]]
+[[dependencies.searchonmcmod]]
 modId = "minecraft"
 mandatory = true
 versionRange = "${minecraft_version_range}"

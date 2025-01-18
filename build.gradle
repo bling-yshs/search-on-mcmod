@@ -74,7 +74,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    runtimeOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}"))
 }
 
 tasks.named('processResources', ProcessResources).configure {
