@@ -14,10 +14,10 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
@@ -48,16 +48,19 @@ public class SearchOnMcmod {
         }
         // 4.查找并得到物品在MCMOD中的ID
         String urlStr = String.format("https://api.mcmod.cn/getItem/?regname=%s", registryName);
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(urlStr))
-                .GET()
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200) {
+        URL url = new URL(urlStr);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode != 200) {
             return;
         }
-        String mcmodItemID = response.body();
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String mcmodItemID = in.readLine();
+        in.close();
+        connection.disconnect();
         log.info("mcmodItemID: " + mcmodItemID);
 
         // 5. 如果mcmodItemID为0，则进行搜索
