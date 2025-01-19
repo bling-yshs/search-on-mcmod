@@ -1,8 +1,9 @@
 package com.yshs.searchonmcmod;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.logging.LogUtils;
+import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import net.minecraft.Util;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ClientRegistry;
@@ -12,8 +13,6 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -23,9 +22,9 @@ import java.net.http.HttpResponse;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
 @Mod(SearchOnMcmod.MOD_ID)
+@Slf4j
 public class SearchOnMcmod {
     public static final String MOD_ID = "searchonmcmod";
-    private static final Logger log = LogUtils.getLogger();
     private static boolean keyDown = false;
 
     public SearchOnMcmod() {
@@ -107,7 +106,7 @@ public class SearchOnMcmod {
 
     }
 
-    public static String convertDescriptionIdToRegistryName(@NotNull String descriptionId) {
+    public static String convertDescriptionIdToRegistryName(@NonNull String descriptionId) {
         // 将输入字符串按"."分割
         String[] parts = descriptionId.split("\\.");
 
