@@ -28,4 +28,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: search-on-mcmod-forge
-          path: build/libs/search-on-mcmod-forge-1.18.2-0.0.2.jar
+          path: build/libs/*.jar
