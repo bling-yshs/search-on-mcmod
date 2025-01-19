@@ -2,7 +2,6 @@ package com.yshs.searchonmcmod;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import net.minecraft.client.util.InputMappings;
 import net.minecraft.util.Util;
 import net.minecraftforge.api.distmarker.Dist;
@@ -13,6 +12,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -22,9 +23,9 @@ import java.net.URL;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
 @Mod(SearchOnMcmod.MOD_ID)
-@Slf4j
 public class SearchOnMcmod {
     public static final String MOD_ID = "searchonmcmod";
+    private static final Logger log = LogManager.getLogger();
     private static boolean keyDown = false;
 
     public SearchOnMcmod() {
