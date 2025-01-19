@@ -115,7 +115,8 @@ public class SearchOnMcmod {
         if (parts.length >= 2) {
             return parts[1] + ":" + parts[2];
         } else {
-            return "";  // 如果格式不符合预期，返回空字符串
+            // 如果格式不符合预期，返回空字符串
+            return "";
         }
     }
 }
