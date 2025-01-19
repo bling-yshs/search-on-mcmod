@@ -1,0 +1,31 @@
+name: 🛠️ 自动构建 (Commit)
+
+on:
+  push:
+
+jobs:
+  commit-build:
+    name: 🛠️ 自动构建
+    runs-on: ubuntu-22.04
+    steps:
+      - name: 克隆当前仓库 (Clone current repo)
+        uses: actions/checkout@v4
+
+      - name: 安装 Gradle (Install Gradle)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: liberica
+          cache: gradle
+
+      - name: 给予 Gradle 包装器执行权限 (Grant execute permission for gradlew)
+        run: chmod +x gradlew
+
+      - name: 构建项目 (Build project)
+        run: ./gradlew build --no-daemon
+
+      - name: 上传构建产物 (Upload artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-on-mcmod-forge
+          path: build/libs/search-on-mcmod-forge-1.18.2-0.0.2.jar
