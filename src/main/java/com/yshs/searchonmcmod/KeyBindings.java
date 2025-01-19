@@ -1,18 +1,19 @@
 package com.yshs.searchonmcmod;
 
-import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.client.KeyMapping;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import org.lwjgl.glfw.GLFW;
+
+import static net.minecraft.client.util.InputMappings.Type.KEYSYM;
 
 public class KeyBindings {
 
     private static final String KEY_CATEGORY = "key.categories.searchonmcmod";
 
-    public static final KeyMapping SEARCH_ON_MCMOD_KEY = new KeyMapping(
+    public static final KeyBinding SEARCH_ON_MCMOD_KEY = new KeyBinding(
             "key.searchonmcmod.search_on_mcmod",
             KeyConflictContext.GUI,
-            InputConstants.Type.KEYSYM,
+            KEYSYM,
             GLFW.GLFW_KEY_B,
             KEY_CATEGORY
     );
