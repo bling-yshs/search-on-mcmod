@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import net.minecraft.Util;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -39,8 +38,6 @@ public class SearchOnMcmod {
             return;
         }
         keyDown = false;
-        // 0. 得到物品的名称
-        String itemName = event.getItemStack().getHoverName().getString();
         // 1. 得到物品的描述ID
         String descriptionId = event.getItemStack().getItem().getDescriptionId();
         // 2. 转换为注册表名
@@ -65,8 +62,10 @@ public class SearchOnMcmod {
 
         // 5. 如果mcmodItemID为0，则进行搜索
         if ("0".equals(mcmodItemID)) {
-            // 得到物品的名称，然后到https://search.mcmod.cn/s?key=%s去搜索
-            String searchUrl = String.format("https://search.mcmod.cn/s?key=%s", registryName);
+            // 得到物品的本地化名称
+            String localizedName = event.getItemStack().getHoverName().getString();
+            // 然后到https://search.mcmod.cn/s?key=%s去搜索
+            String searchUrl = String.format("https://search.mcmod.cn/s?key=%s", localizedName);
             Util.getPlatform().openUri(searchUrl);
             return;
         }
