@@ -36,6 +36,8 @@ minecraft {
         }
 
         client {
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             property 'forge.enabledGameTestNamespaces', mod_id
         }
 
@@ -64,8 +66,12 @@ repositories {
         url = 'https://maven.minecraftforge.net/'
     }
     maven {
-        name = "Jared's maven"
+        name = "JEI"
         url = "https://maven.blamejared.com/"
+    }
+    maven {
+        name = "MysticalAgriculture"
+        url 'https://maven.blakesmods.com/releases/'
     }
 
 }
