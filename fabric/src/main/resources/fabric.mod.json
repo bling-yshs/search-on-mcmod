@@ -1,0 +1,34 @@
+{
+    "schemaVersion": 1,
+    "id": "searchonmcmod",
+    "version": "${version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "${mod_author}"
+    ],
+    "contact": {
+        "homepage": "https://fabricmc.net/",
+        "sources": "https://github.com/FabricMC/fabric-example-mod"
+    },
+    "license": "${license}",
+    "icon": "logo.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+          "com.yshs.searchonmcmod.SearchOnMcmod"
+        ]
+    },
+    "mixins": [
+        "searchonmcmod.fabric.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${fabric_loader_version}",
+        "fabric-api": "*",
+        "minecraft": "${minecraft_version}",
+        "java": ">=${java_version}"
+    },
+    "suggests": {
+        "another-mod": "*"
+    }
+}
