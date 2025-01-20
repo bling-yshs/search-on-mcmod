@@ -12,6 +12,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -39,13 +40,21 @@ public class SearchOnMcmod {
         keyDown = false;
         // 1. 得到物品的描述ID
         String descriptionId = event.getItemStack().getItem().getDescriptionId();
-        // 2. 转换为注册表名
-        String registryName = SearchOnMcmod.convertDescriptionIdToRegistryName(descriptionId);
-        // 3. 如果注册表名为空或"minecraft:air"，则返回
-        if (registryName.isEmpty() || "minecraft:air".equals(registryName)) {
+        if (StringUtils.isBlank(descriptionId)) {
             return;
         }
-        // 4.查找并得到物品在MCMOD中的ID
+        // 2. 转换为注册表名
+        String registryName = SearchOnMcmod.convertDescriptionIdToRegistryName(descriptionId);
+        // 3. 如果注册表名为空气，则不进行搜索
+        if ("minecraft:air".equals(registryName)) {
+            return;
+        }
+        // 4. 如果注册表明为空，但是物品的描述ID不为空，则进行搜索
+        if (StringUtils.isBlank(registryName) && StringUtils.isNotBlank(descriptionId)) {
+            MainUtil.openSearchPage(descriptionId);
+            return;
+        }
+        // 5. 查找并得到物品在MCMOD中的ID
         String urlStr = String.format("https://api.mcmod.cn/getItem/?regname=%s", registryName);
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -57,21 +66,20 @@ public class SearchOnMcmod {
             return;
         }
         String mcmodItemID = response.body();
-        log.info("mcmodItemID: " + mcmodItemID);
+        log.info("mcmodItemID: {}", mcmodItemID);
 
         // 5. 如果mcmodItemID为0，则进行搜索
         if ("0".equals(mcmodItemID)) {
             // 得到物品的本地化名称
             String localizedName = event.getItemStack().getHoverName().getString();
             // 然后到https://search.mcmod.cn/s?key=%s去搜索
-            String searchUrl = String.format("https://search.mcmod.cn/s?key=%s", localizedName);
-            Util.getPlatform().openUri(searchUrl);
+            MainUtil.openSearchPage(localizedName);
             return;
         }
 
         // 6. 打开MCMOD的物品页面
         String mcmodPageUrl = String.format("https://www.mcmod.cn/item/%s.html", mcmodItemID);
-        log.info("mcmodPageUrl: " + mcmodPageUrl);
+        log.info("mcmodPageUrl: {}", mcmodPageUrl);
         Util.getPlatform().openUri(mcmodPageUrl);
 
     }
