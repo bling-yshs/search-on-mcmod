@@ -10,12 +10,10 @@ buildscript {
 }
 
 
-base {
-	archivesName = "search-on-mcmod-forge-1.12.2-${version}"
-}
-
 apply plugin: "java"
 apply plugin: "net.minecraftforge.gradle"
+
+archivesBaseName = "search-on-mcmod-forge-1.12.2-${project.version}"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 compileJava {
