@@ -19,6 +19,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 minecraft {
     mappings channel: mapping_channel, version: "${parchment_date}-${minecraft_version}"
+    reobf = false
     copyIdeResources = true
     runs {
         configureEach {
