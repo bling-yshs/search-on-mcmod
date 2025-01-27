@@ -27,5 +27,8 @@ jobs:
       - name: 上传构建产物 (Upload artifacts)
         uses: actions/upload-artifact@v4
         with:
-          name: search-on-mcmod-forge
-          path: build/libs/*.jar
+          name: build-result
+          path: |
+            fabric/build/libs/*[0-9].jar
+            neoforge/build/libs/*[0-9].jar
+            forge/build/libs/*[0-9].jar
