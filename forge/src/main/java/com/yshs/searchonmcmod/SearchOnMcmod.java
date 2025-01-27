@@ -13,6 +13,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
@@ -76,21 +77,22 @@ public class SearchOnMcmod {
     }
 
     @SubscribeEvent
-    public void onKeyPressed(ScreenEvent.KeyPressed.Post event) {
+    public void onKeyPressed(ScreenEvent.KeyReleased.Pre event) {
         int keyCode = event.getKeyCode();
         InputConstants.Key key = SEARCH_ON_MCMOD_KEY.getKey();
         if (keyCode == key.getValue() && keyDown == false) {
             keyDown = true;
-            log.info("SEARCH_ON_MCMOD_KEY按键已按下，keyDown设置为true");
-        }
-    }
-
-    @SubscribeEvent
-    public void onKeyReleased(ScreenEvent.KeyReleased.Post event) {
-        int keyCode = event.getKeyCode();
-        if (keyCode == SEARCH_ON_MCMOD_KEY.getKey().getValue()) {
-            keyDown = false;
-            log.info("SEARCH_ON_MCMOD_KEY按键已释放，keyDown设置为false");
+            // Java 8 的延迟执行方式
+            CompletableFuture.supplyAsync(() -> {
+                try {
+                    Thread.sleep(100);
+                    keyDown = false;
+                    log.info("SEARCH_ON_MCMOD_KEY按键自动释放，keyDown设置为false");
+                } catch (InterruptedException e) {
+                    log.error("Delayed key up interrupted", e);
+                }
+                return null;
+            });
         }
     }
 
