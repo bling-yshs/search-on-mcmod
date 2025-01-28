@@ -29,6 +29,4 @@ jobs:
         with:
           name: build-result
           path: |
-            fabric/build/libs/*[0-9].jar
-            neoforge/build/libs/*[0-9].jar
-            forge/build/libs/*[0-9].jar
+            build/libs/*[0-9].jar
