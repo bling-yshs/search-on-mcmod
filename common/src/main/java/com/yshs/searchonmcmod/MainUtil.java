@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Optional;
 
 /**
@@ -36,8 +37,10 @@ public class MainUtil {
      *
      * @param name 物品名称
      */
+    @SneakyThrows
     public static void openSearchPage(@NonNull String name) {
-        String url = String.format(SEARCH_PAGE_URL, name);
+        String encode = URLEncoder.encode(name, "UTF-8");
+        String url = String.format(SEARCH_PAGE_URL, encode);
         log.info("打开MC百科搜索页面: {}", url);
         Util.getPlatform().openUri(url);
     }
