@@ -1,0 +1,21 @@
+{
+	"modListVersion": 2,
+	"modList": [{
+		"modid": "${modId}",
+		"name": "${modName}",
+		"description": "Search for item under the cursor on mcmod.cn",
+		"version": "0.0.2",
+		"mcversion": "${minecraftVersion}",
+		"url": "https://github.com/bling-yshs/search-on-mcmod",
+		"updateUrl": "",
+		"authorList": ["bling-yshs"],
+		"credits": "",
+		"logoFile": "logo.png",
+		"screenshots": [],
+		"parent": "",
+		"requiredMods": [],
+		"dependencies": [],
+		"dependants": [],
+		"useDependencyInformation": false
+	}]
+}

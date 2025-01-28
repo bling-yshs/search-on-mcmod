@@ -1,3 +1,10 @@
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = "UTF-8"
+plugins {
+    id 'com.gtnewhorizons.gtnhconvention'
+}
+
+// 设置构建产物名字
+//base {
+//}
+jar {
+    archiveFileName = "searchonmcmod-forge-1.7.10-${modVersion}.jar"
 }

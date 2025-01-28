@@ -3,11 +3,12 @@ package com.yshs.searchonmcmod;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import net.minecraft.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -16,8 +17,8 @@ import java.util.Optional;
 /**
  * 通用工具类
  */
-@Slf4j
 public class MainUtil {
+    private static final Logger log = LogManager.getLogger();
     /**
      * 搜索页面 URL
      */
@@ -42,7 +43,7 @@ public class MainUtil {
         String encode = URLEncoder.encode(name, "UTF-8");
         String url = String.format(SEARCH_PAGE_URL, encode);
         log.info("打开MC百科搜索页面: {}", url);
-        Util.getPlatform().openUri(url);
+        MainUtil.browse(url);
     }
 
     /**
@@ -53,7 +54,7 @@ public class MainUtil {
     public static void openItemPage(@NonNull String id) {
         String url = String.format(ITEM_PAGE_URL, id);
         log.info("打开MC百科物品页面: {}", url);
-        Util.getPlatform().openUri(url);
+        MainUtil.browse(url);
     }
 
     /**
@@ -99,4 +100,46 @@ public class MainUtil {
             return "";
         }
     }
+
+    /**
+     * copy from <a href="https://github.com/Nova-Committee/McMod-Search-Reborn/blob/1.16-forge/src/main/java/nova/committee/mcmodwiki/core/CoreService.java">...</a>
+     *
+     * @param url 要打开的url
+     * @throws Exception
+     */
+    @SneakyThrows
+    private static void browse(String url) {
+        // 获取操作系统的名字
+        String osName = System.getProperty("os.name", "");
+        if (osName.startsWith("Mac OS")) {
+            // 苹果的打开方式
+            Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
+            Method openURL = fileMgr.getDeclaredMethod("openURL",
+                    String.class);
+            openURL.invoke(null, url);
+        } else if (osName.startsWith("Windows")) {
+            // windows的打开方式。
+            Runtime.getRuntime().exec(
+                    "rundll32 url.dll,FileProtocolHandler " + url);
+        } else {
+            // Unix or Linux的打开方式
+            String[] browsers = {"firefox", "opera", "konqueror", "epiphany",
+                    "mozilla", "netscape"};
+            String browser = null;
+            for (int count = 0; count < browsers.length && browser == null; count++)
+                // 执行代码，在browser有值后跳出，
+                // 这里是如果进程创建成功了，==0是表示正常结束。
+                if (Runtime.getRuntime()
+                        .exec(new String[]{"which", browsers[count]})
+                        .waitFor() == 0)
+                    browser = browsers[count];
+            if (browser == null)
+                throw new Exception("Could not find web browser");
+            else
+                // 这个值在上面已经成功的得到了一个进程。
+                Runtime.getRuntime().exec(new String[]{browser, url});
+        }
+    }
+
+
 }
