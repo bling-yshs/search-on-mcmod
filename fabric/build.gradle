@@ -50,3 +50,9 @@ tasks.named('processResources', ProcessResources).configure {
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 21
 }
+
+tasks.register('printVersion') {
+    doLast {
+        println "${project.mod_version}"
+    }
+}
