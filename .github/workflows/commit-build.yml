@@ -27,26 +27,26 @@ jobs:
           ./gradlew build --no-daemon
           echo "::set-output name=version::$(./gradlew -q printVersion --no-daemon)"
 
-      - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
-        with:
-          if-no-files-found: ignore
-          path: |
-            neoforge/build/libs/*[0-9].jar
-      - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
-        with:
-          if-no-files-found: ignore
-          path: |
-            forge/build/libs/*[0-9].jar
-      - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
-        with:
-          if-no-files-found: ignore
-          path: |
-            fabric/build/libs/*[0-9].jar
-
-      - uses: actions/upload-artifact/merge@v4
+#      - name: 上传构建产物 (Upload artifacts)
+#        uses: actions/upload-artifact@v4
+#        with:
+#          if-no-files-found: ignore
+#          path: |
+#            neoforge/build/libs/*[0-9].jar
+#      - name: 上传构建产物 (Upload artifacts)
+#        uses: actions/upload-artifact@v4
+#        with:
+#          if-no-files-found: ignore
+#          path: |
+#            forge/build/libs/*[0-9].jar
+#      - name: 上传构建产物 (Upload artifacts)
+#        uses: actions/upload-artifact@v4
+#        with:
+#          if-no-files-found: ignore
+#          path: |
+#            fabric/build/libs/*[0-9].jar
+#
+#      - uses: actions/upload-artifact/merge@v4
 
       #      - name: 生成更新日志 (Generate changelog)
       #        id: changelog
