@@ -22,13 +22,55 @@ jobs:
         run: chmod +x gradlew
 
       - name: 构建项目 (Build project)
-        run: ./gradlew build --no-daemon
+        id: gradle-build
+        run: |
+          ./gradlew build --no-daemon
+          echo "version=$(./gradlew -q printVersion --no-daemon)" >> $GITHUB_OUTPUT
 
       - name: 上传构建产物 (Upload artifacts)
         uses: actions/upload-artifact@v4
         with:
-          name: build-result
+          name: neoforge
+          if-no-files-found: ignore
+          path: |
+            neoforge/build/libs/*[0-9].jar
+
+      - name: 上传构建产物 (Upload artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge
+          if-no-files-found: ignore
+          path: |
+            forge/build/libs/*[0-9].jar
+
+      - name: 上传构建产物 (Upload artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabric
+          if-no-files-found: ignore
           path: |
             fabric/build/libs/*[0-9].jar
-            neoforge/build/libs/*[0-9].jar
-            forge/build/libs/*[0-9].jar
+
+      - name: 合并构建产物 (Merge artifacts)
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: merged-artifacts
+
+      - name: 下载 Artifact (Download Artifact)
+        uses: actions/download-artifact@v4
+        with:
+          path: ./download
+          name: merged-artifacts
+
+      - name: 上传编译结果到 Release (Upload build result to Release)
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "v${{ steps.gradle-build.outputs.version }}"
+          prerelease: true
+          updateOnlyUnreleased: true
+          #          body: |
+          #            ${{ steps.changelog.outputs.compareurl }}
+          #            ${{ steps.changelog.outputs.changelog }}
+          artifacts: |
+            ./download/*.jar
