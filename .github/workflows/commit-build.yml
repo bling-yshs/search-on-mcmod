@@ -36,13 +36,13 @@ jobs:
             neoforge/build/libs/*[0-9].jar
             forge/build/libs/*[0-9].jar
 
-      - name: 生成更新日志 (Generate changelog)
-        id: changelog
-        uses: jaywcjlove/changelog-generator@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          filter-author: (jaywcjlove|小弟调调™|dependabot|renovate\\[bot\\]|dependabot\\[bot\\]|Renovate Bot)
-          filter: '^(release|fixup|docs|ci|style|test|build):'
+#      - name: 生成更新日志 (Generate changelog)
+#        id: changelog
+#        uses: jaywcjlove/changelog-generator@main
+#        with:
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          filter-author: (jaywcjlove|小弟调调™|dependabot|renovate\\[bot\\]|dependabot\\[bot\\]|Renovate Bot)
+#          filter: '^(release|fixup|docs|ci|style|test|build):'
 
       - name: 上传编译结果到 Release (Upload build result to Release)
         uses: ncipollo/release-action@v1
@@ -51,9 +51,9 @@ jobs:
           tag: "v${{ steps.gradle-build.outputs.version }}"
           prerelease: true
           updateOnlyUnreleased: true
-          body: |
-            ${{ steps.changelog.outputs.compareurl }}
-            ${{ steps.changelog.outputs.changelog }}
+#          body: |
+#            ${{ steps.changelog.outputs.compareurl }}
+#            ${{ steps.changelog.outputs.changelog }}
           artifacts: |
             fabric/build/libs/*[0-9].jar
             neoforge/build/libs/*[0-9].jar
