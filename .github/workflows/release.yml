@@ -18,6 +18,11 @@ jobs:
           python-version: '3.13'
       - name: Install dependencies
         run: pip install requests
+      - uses: robinraju/release-downloader@v1
+        with:
+          releaseId: ${{ github.event.release.id }}
+          out-file-path: release_assets
+          fileName: '*.jar'
       - name: Generate matrix
         id: set-matrix
         run: |
