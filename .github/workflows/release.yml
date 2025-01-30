@@ -2,7 +2,7 @@ name: 🚀 发布正式版 (Release)
 
 on:
   release:
-    types: [ released ]
+    types: [ published ]
 
 jobs:
   setup:
