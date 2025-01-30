@@ -14,6 +14,7 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
@@ -27,7 +28,8 @@ public class SearchOnMcmod {
      * MOD ID
      */
     public static final String MOD_ID = "searchonmcmod";
-    private static boolean keyDown = false;
+    private final AtomicBoolean allowOpenUrl = new AtomicBoolean(false);
+    private final AtomicBoolean keyPressedFlag = new AtomicBoolean(false);
 
     /**
      * 构造函数
@@ -44,10 +46,10 @@ public class SearchOnMcmod {
     @SubscribeEvent
     @SneakyThrows
     public void onRenderTooltipEvent(ItemTooltipEvent event) {
-        if (keyDown == false) {
+        if (!allowOpenUrl.getAndSet(false)) {
             return;
         }
-        keyDown = false;
+        log.info("allowOpenUrl设置为false");
         // 1. 得到物品的描述ID
         String descriptionId = event.getItemStack().getItem().getDescriptionId();
         if (StringUtils.isBlank(descriptionId)) {
@@ -80,38 +82,35 @@ public class SearchOnMcmod {
             return;
         }
 
-        // 6. 打开MCMOD的物品页面
-        MainUtil.openItemPage(itemMCMODID);
+        // 7. 判断物品页面是否存在，如果不存在则进行搜索
+        if (!MainUtil.itemPageExist(itemMCMODID)) {
+            // 得到物品的本地化名称
+            String localizedName = event.getItemStack().getHoverName().getString();
+            // 然后到https://search.mcmod.cn/s?key=%s去搜索
+            MainUtil.openSearchPage(localizedName);
+            return;
+        }
 
+        // 8. 打开MCMOD的物品页面
+        MainUtil.openItemPage(itemMCMODID);
     }
 
     /**
-     * 在按键按下事件时触发
-     *
-     * @param event 按键按下事件，监听是否按下搜索按键
+     * @param event 键盘按下事件
      */
     @SubscribeEvent
     public void onKeyPressed(ScreenEvent.KeyPressed.Post event) {
-        int keyCode = event.getKeyCode();
-        InputConstants.Key key = SEARCH_ON_MCMOD_KEY.getKey();
-        if (keyCode == key.getValue() && keyDown == false) {
-            keyDown = true;
-            log.info("SEARCH_ON_MCMOD_KEY按键已按下，keyDown设置为true");
+        int eventKeyCode = event.getKeyCode();
+        InputConstants.Key settingsKey = SEARCH_ON_MCMOD_KEY.getKey();
+        if (eventKeyCode != settingsKey.getValue()) {
+            return;
         }
-    }
-
-    /**
-     * 在按键释放事件时触发
-     *
-     * @param event 按键释放事件，监听是否释放搜索按键
-     */
-    @SubscribeEvent
-    public void onKeyReleased(ScreenEvent.KeyReleased.Post event) {
-        int keyCode = event.getKeyCode();
-        if (keyCode == SEARCH_ON_MCMOD_KEY.getKey().getValue()) {
-            keyDown = false;
-            log.info("SEARCH_ON_MCMOD_KEY按键已释放，keyDown设置为false");
+        if (keyPressedFlag.get()) {
+            return;
         }
+        keyPressedFlag.set(true);
+        allowOpenUrl.set(true);
+        log.info("SEARCH_ON_MCMOD_KEY按键已按下，keyPressedFlag，allowOpenUrl设置为true");
     }
 
     /**
