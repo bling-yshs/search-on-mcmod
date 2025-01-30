@@ -46,6 +46,19 @@ public class MainUtil {
     }
 
     /**
+     * @param id 物品 ID
+     * @return 物品页面是否存在 true: 存在 false: 不存在
+     */
+    @SneakyThrows
+    public static boolean itemPageExist(@NonNull String id) {
+        String urlStr = String.format(ITEM_PAGE_URL, id);
+        log.info("检查MC百科物品页面是否存在: {}", urlStr);
+        URL url = new URL(urlStr);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        return connection.getResponseCode() == 200;
+    }
+
+    /**
      * 打开物品页面
      *
      * @param id 物品 ID
