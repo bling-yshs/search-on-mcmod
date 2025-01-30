@@ -2,6 +2,8 @@ name: 🛠️ 自动构建 (Commit)
 
 on:
   push:
+    branches-ignore:
+      - master
 
 jobs:
   commit-build:
@@ -70,6 +72,7 @@ jobs:
           prerelease: true
           allowUpdates: true
           updateOnlyUnreleased: true
+          omitBodyDuringUpdate: true
           #          body: |
           #            ${{ steps.changelog.outputs.compareurl }}
           #            ${{ steps.changelog.outputs.changelog }}
