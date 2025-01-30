@@ -69,12 +69,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: "v${{ steps.gradle-build.outputs.version }}"
-          prerelease: true
+          draft: true
           allowUpdates: true
           updateOnlyUnreleased: true
           omitBodyDuringUpdate: true
-          #          body: |
-          #            ${{ steps.changelog.outputs.compareurl }}
-          #            ${{ steps.changelog.outputs.changelog }}
           artifacts: |
             ./download/*.jar
