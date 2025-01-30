@@ -1,0 +1,56 @@
+name: 🚀 发布正式版 (Release)
+
+on:
+  release:
+    types: [ released ]
+
+jobs:
+  setup:
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: pip install requests
+      - name: Generate matrix
+        id: set-matrix
+        run: |
+          output=$(python .github/scripts/upload_modrinth.py)
+          echo "matrix=$output" >> $GITHUB_OUTPUT
+
+  upload-to-modrinth:
+    needs: setup
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: robinraju/release-downloader@v1
+        with:
+          releaseId: ${{ github.event.release.id }}
+          out-file-path: release_assets
+          fileName: '*.jar'
+
+      - name: Upload to Modrinth
+        uses: RubixDev/modrinth-upload@v1
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          file_path: ./release_assets/${{ matrix.file }}
+          name: ${{ matrix.name }}
+          version: ${{ github.event.release.tag_name }}
+          changelog: ${{ github.event.release.body }}
+          game_versions: ${{ matrix.game_versions }}
+          release_type: release
+          loaders: ${{ matrix.loader }}
+          featured: true
+          project_id: cPF7RWdR
+        continue-on-error: true
