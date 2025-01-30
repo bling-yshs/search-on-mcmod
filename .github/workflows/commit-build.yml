@@ -2,8 +2,6 @@ name: 🛠️ 自动构建 (Commit)
 
 on:
   push:
-    branches-ignore:
-      - master
 
 jobs:
   commit-build:
