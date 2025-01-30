@@ -80,7 +80,17 @@ public class SearchOnMcmod implements ModInitializer {
             return;
         }
 
-        // 6. 打开MCMOD的物品页面
+
+        // 7. 判断物品页面是否存在，如果不存在则进行搜索
+        if (!MainUtil.itemPageExist(itemMCMODID)) {
+            // 得到物品的本地化名称
+            String localizedName = itemStack.getHoverName().getString();
+            // 然后到https://search.mcmod.cn/s?key=%s去搜索
+            MainUtil.openSearchPage(localizedName);
+            return;
+        }
+
+        // 8. 打开MCMOD的物品页面
         MainUtil.openItemPage(itemMCMODID);
 
     }
