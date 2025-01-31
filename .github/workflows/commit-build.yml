@@ -2,6 +2,8 @@ name: 🛠️ 自动构建 (Commit)
 
 on:
   push:
+    paths-ignore:
+      - '.github/**'
 
 jobs:
   commit-build:
