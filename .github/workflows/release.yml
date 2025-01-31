@@ -1,8 +1,12 @@
 name: 🚀 发布正式版 (Release)
 
 on:
-  release:
-    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '输入要发布的版本号'
+        required: true
+        type: string
 
 jobs:
   setup:
@@ -10,20 +14,34 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Checkout repository
+      - name: 克隆当前仓库 (Clone current repo)
         uses: actions/checkout@v4
-      - name: Set up Python
+
+      - name: 得到最新发布版本 (Get latest Release)
+        run: |
+          latest_version=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+          echo "latest_version=$latest_version" >> $GITHUB_ENV
+
+      - name: 检查版本号 (Check version)
+        run: |
+          if [ "v${{ github.event.inputs.version }}" != "$latest_version" ]; then
+            echo "输入的版本号 ${GITHUB_EVENT_INPUT_VERSION} 不等于最新发布版本 ${latest_version}，请检查！"
+            exit 1
+          fi
+
+      - name: 安装 Python (Set up Python)
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Install dependencies
-        run: pip install requests
-      - uses: robinraju/release-downloader@v1
+
+      - name: 下载 Release 里的文件 (Download files from Release)
+        uses: robinraju/release-downloader@v1
         with:
-          releaseId: ${{ github.event.release.id }}
+          tag: "v${{ github.event.inputs.version }}"
           out-file-path: release_assets
           fileName: '*.jar'
-      - name: Generate matrix
+
+      - name: 设置矩阵 (Set matrix)
         id: set-matrix
         run: |
           output=$(python .github/scripts/upload_modrinth.py)
@@ -36,26 +54,36 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
 
     steps:
-      - name: Checkout repository
+      - name: 克隆当前仓库 (Clone current repo)
         uses: actions/checkout@v4
 
-      - uses: robinraju/release-downloader@v1
+      - name: 下载 Release 里的文件 (Download files from Release)
+        uses: robinraju/release-downloader@v1
         with:
-          releaseId: ${{ github.event.release.id }}
+          tag: "v${{ github.event.inputs.version }}"
           out-file-path: release_assets
           fileName: '*.jar'
 
-      - name: Upload to Modrinth
+      - name: 获取 Release 正文 (Get Release Body)
+        id: get-release-body
+        run: |
+          release_body=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ github.event.inputs.version }}" | jq -r .body)
+          echo "release_body<<EOF" >> $GITHUB_ENV
+          echo "$release_body" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: 上传到 Modrinth (Upload to Modrinth)
         uses: RubixDev/modrinth-upload@v1
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
           file_path: ./release_assets/${{ matrix.file }}
           name: ${{ matrix.name }}
-          version: ${{ github.event.release.tag_name }}
-          changelog: ${{ github.event.release.body }}
+          version: ${{ github.event.inputs.version }}
+          changelog: ${{ env.release_body }}
           game_versions: ${{ matrix.game_versions }}
           release_type: release
           loaders: ${{ matrix.loader }}
           featured: true
           project_id: cPF7RWdR
         continue-on-error: true
+
