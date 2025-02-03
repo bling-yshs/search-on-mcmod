@@ -31,7 +31,7 @@ public class MainUtil {
     /**
      * 获取物品 ID URL
      */
-    private static final String FETCH_ITEM_ID_URL = "https://api.mcmod.cn/getItem/?regname=%s";
+    private static final String FETCH_ITEM_ID_URL = "https://api.mcmod.cn/getItem/?regname=%s&metadata=%d";
 
     /**
      * 打开搜索页面
@@ -61,11 +61,12 @@ public class MainUtil {
      * 通过百科 API 获取物品 MCMOD ID
      *
      * @param registryName 物品注册名
+     * @param metadata
      * @return 物品的 MCMOD ID
      */
     @SneakyThrows
-    public static Optional<String> fetchItemMCMODID(@NonNull String registryName) {
-        String urlStr = String.format(FETCH_ITEM_ID_URL, registryName);
+    public static Optional<String> fetchItemMCMODID(@NonNull String registryName, int metadata) {
+        String urlStr = String.format(FETCH_ITEM_ID_URL, registryName, metadata);
         log.info("通过百科API获取物品 ID: {}", urlStr);
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();

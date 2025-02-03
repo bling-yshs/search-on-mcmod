@@ -58,8 +58,10 @@ public class SearchOnMcmod {
         if ("minecraft:air".equals(registryNameStr)) {
             return;
         }
+        // 4. 得到物品的metadata(如果有的话)
+        int metadata = event.getItemStack().getMetadata();
         // 5. 查找并得到物品在MCMOD中的ID
-        Optional<String> optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryNameStr);
+        Optional<String> optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryNameStr, metadata);
         if (!optionalItemMCMODID.isPresent()) {
             return;
         }

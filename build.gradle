@@ -13,7 +13,7 @@ buildscript {
 apply plugin: "java"
 apply plugin: "net.minecraftforge.gradle"
 
-archivesBaseName = "search-on-mcmod-forge-1.12.2"
+archivesBaseName = "searchonmcmod-forge-1.12.2"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 compileJava {
