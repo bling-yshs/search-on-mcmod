@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
@@ -60,25 +61,33 @@ public class SearchOnMcmod {
         }
         // 4. 得到物品的metadata(如果有的话)
         int metadata = event.getItemStack().getMetadata();
-        // 5. 查找并得到物品在MCMOD中的ID
-        Optional<String> optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryNameStr, metadata);
-        if (!optionalItemMCMODID.isPresent()) {
-            return;
-        }
-        String itemMCMODID = optionalItemMCMODID.get();
+        // 5. 得到物品的本地化名称
+        String localizedName = event.getItemStack().getDisplayName();
+        // 6. 异步获取物品的MCMODID
+        CompletableFuture.runAsync(() -> {
+            Optional<String> optionalItemMCMODID;
+            try {
+                optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryNameStr, metadata);
+            } catch (Exception e) {
+                log.error("无法通过百科 API 获取物品 MCMOD ID", e);
+                return;
+            }
+            if (!optionalItemMCMODID.isPresent()) {
+                return;
+            }
+            String itemMCMODID = optionalItemMCMODID.get();
 
-        // 6. 如果mcmodItemID为0，则进行搜索
-        if ("0".equals(itemMCMODID)) {
-            // 得到物品的本地化名称
-            String localizedName = event.getItemStack().getDisplayName();
-            // 然后到https://search.mcmod.cn/s?key=%s去搜索
-            MainUtil.openSearchPage(localizedName);
-            return;
-        }
+            // 6. 如果mcmodItemID为0，则进行搜索
+            if ("0".equals(itemMCMODID)) {
+                // 到https://search.mcmod.cn/s?key=%s去搜索
+                MainUtil.openSearchPage(localizedName);
+                return;
+            }
 
-        // 6. 打开MCMOD的物品页面
-        MainUtil.openItemPage(itemMCMODID);
+            // 7. 打开MCMOD的物品页面
+            MainUtil.openItemPage(itemMCMODID);
 
+        });
     }
 
     /**
