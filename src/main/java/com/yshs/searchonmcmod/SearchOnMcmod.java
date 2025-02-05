@@ -76,7 +76,7 @@ public class SearchOnMcmod {
                 optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryNameStr, metadata);
             } catch (Exception e) {
                 log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
-                // 提交到客户端主线程发送提示消息
+                // 发送提示消息
                 Minecraft.getMinecraft().player.sendMessage(new TextComponentTranslation("text.searchonmcmod.mcmodid_not_found"));
                 return;
             }
