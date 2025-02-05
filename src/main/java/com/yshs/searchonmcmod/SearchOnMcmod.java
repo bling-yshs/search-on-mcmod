@@ -22,6 +22,9 @@ import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
  */
 @Mod(modid = SearchOnMcmod.MOD_ID)
 public class SearchOnMcmod {
+    /**
+     * MOD ID
+     */
     public static final String MOD_ID = "searchonmcmod";
     private static final Logger log = LogManager.getLogger();
     private static boolean keyDown = false;
@@ -84,7 +87,14 @@ public class SearchOnMcmod {
                 return;
             }
 
-            // 7. 打开MCMOD的物品页面
+            // 7. 判断物品页面是否存在，如果不存在则进行搜索
+            if (!MainUtil.itemPageExist(itemMCMODID)) {
+                // 到https://search.mcmod.cn/s?key=%s去搜索
+                MainUtil.openSearchPage(localizedName);
+                return;
+            }
+
+            // 8. 打开MCMOD的物品页面
             MainUtil.openItemPage(itemMCMODID);
 
         });

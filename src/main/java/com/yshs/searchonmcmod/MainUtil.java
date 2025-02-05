@@ -61,7 +61,7 @@ public class MainUtil {
      * 通过百科 API 获取物品 MCMOD ID
      *
      * @param registryName 物品注册名
-     * @param metadata
+     * @param metadata     物品元数据
      * @return 物品的 MCMOD ID
      */
     @SneakyThrows
@@ -92,21 +92,23 @@ public class MainUtil {
     }
 
     /**
-     * 将物品描述ID转换为注册表名
-     *
-     * @param descriptionId 物品描述ID
-     * @return 注册表名
+     * @param id 物品 ID
+     * @return 物品页面是否存在 true: 存在 false: 不存在
      */
-    public static String convertDescriptionIdToRegistryName(@NonNull String descriptionId) {
-        // 将输入字符串按"."分割
-        String[] parts = descriptionId.split("\\.");
-
-        // 返回格式化后的字符串
-        if (parts.length >= 2) {
-            return parts[1] + ":" + parts[2];
-        } else {
-            // 如果格式不符合预期，返回空字符串
-            return "";
+    @SneakyThrows
+    public static boolean itemPageExist(@NonNull String id) {
+        String urlStr = String.format(ITEM_PAGE_URL, id);
+        log.info("检查MC百科物品页面是否存在: {}", urlStr);
+        URL url = new URL(urlStr);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        // 设置连接超时为5秒
+        connection.setConnectTimeout(5000);
+        // 设置读取超时为5秒
+        connection.setReadTimeout(5000);
+        try {
+            return connection.getResponseCode() == 200;
+        } finally {
+            connection.disconnect();
         }
     }
 
@@ -114,7 +116,6 @@ public class MainUtil {
      * copy from <a href="https://github.com/Nova-Committee/McMod-Search-Reborn/blob/1.16-forge/src/main/java/nova/committee/mcmodwiki/core/CoreService.java">...</a>
      *
      * @param url 要打开的url
-     * @throws Exception
      */
     @SneakyThrows
     private static void browse(String url) {
@@ -149,6 +150,5 @@ public class MainUtil {
                 Runtime.getRuntime().exec(new String[]{browser, url});
         }
     }
-
 
 }
