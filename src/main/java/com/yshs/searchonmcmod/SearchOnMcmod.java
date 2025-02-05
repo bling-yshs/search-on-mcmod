@@ -1,7 +1,9 @@
 package com.yshs.searchonmcmod;
 
 import lombok.SneakyThrows;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -14,6 +16,7 @@ import org.lwjgl.input.Keyboard;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
@@ -27,7 +30,8 @@ public class SearchOnMcmod {
      */
     public static final String MOD_ID = "searchonmcmod";
     private static final Logger log = LogManager.getLogger();
-    private static boolean keyDown = false;
+    private final AtomicBoolean allowOpenUrl = new AtomicBoolean(false);
+    private final AtomicBoolean keyPressedFlag = new AtomicBoolean(false);
 
     /**
      * 构造函数
@@ -45,11 +49,10 @@ public class SearchOnMcmod {
     @SubscribeEvent
     @SneakyThrows
     public void onRenderTooltipEvent(ItemTooltipEvent event) {
-        if (keyDown == false) {
+        if (!allowOpenUrl.getAndSet(false)) {
             return;
         }
-        keyDown = false;
-        log.info("触发了");
+        log.info("allowOpenUrl设置为false");
         // 1. 得到物品的注册表名
         ResourceLocation registryName = event.getItemStack().getItem().getRegistryName();
         if (registryName == null) {
@@ -72,7 +75,9 @@ public class SearchOnMcmod {
             try {
                 optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryNameStr, metadata);
             } catch (Exception e) {
-                log.error("无法通过百科 API 获取物品 MCMOD ID", e);
+                log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
+                // 提交到客户端主线程发送提示消息
+                Minecraft.getMinecraft().player.sendMessage(new TextComponentTranslation("text.searchonmcmod.mcmodid_not_found"));
                 return;
             }
             if (!optionalItemMCMODID.isPresent()) {
@@ -107,9 +112,10 @@ public class SearchOnMcmod {
      */
     @SubscribeEvent
     public void onKeyPressed(GuiScreenEvent.KeyboardInputEvent.Pre event) {
-        if (Keyboard.isKeyDown(SEARCH_ON_MCMOD_KEY.getKeyCode()) && keyDown == false) {
-            keyDown = true;
-            log.info("按键已按下，keyDown设置为true");
+        if (Keyboard.isKeyDown(SEARCH_ON_MCMOD_KEY.getKeyCode()) && !keyPressedFlag.get()) {
+            keyPressedFlag.set(true);
+            allowOpenUrl.set(true);
+            log.info("按键已按下，keyPressedFlag和allowOpenUrl设置为true");
         }
     }
 
@@ -120,9 +126,9 @@ public class SearchOnMcmod {
      */
     @SubscribeEvent
     public void onKeyReleased(GuiScreenEvent.KeyboardInputEvent.Post event) {
-        if (!Keyboard.isKeyDown(SEARCH_ON_MCMOD_KEY.getKeyCode()) && keyDown == true) {
-            keyDown = false;
-            log.info("按键已释放，keyDown设置为false");
+        if (!Keyboard.isKeyDown(SEARCH_ON_MCMOD_KEY.getKeyCode()) && keyPressedFlag.get()) {
+            keyPressedFlag.set(false);
+            log.info("按键已释放，keyPressedFlag设置为false");
         }
     }
 
