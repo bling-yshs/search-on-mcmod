@@ -12,9 +12,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.apache.commons.lang3.StringUtils;
+import net.minecraft.network.chat.TextComponent;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
@@ -66,33 +68,45 @@ public class SearchOnMcmod {
             MainUtil.openSearchPage(descriptionId);
             return;
         }
-        // 5. 查找并得到物品在MCMOD中的ID
-        Optional<String> optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryName);
-        if (!optionalItemMCMODID.isPresent()) {
-            return;
-        }
-        String itemMCMODID = optionalItemMCMODID.get();
 
-        // 6. 如果mcmodItemID为0，则进行搜索
-        if ("0".equals(itemMCMODID)) {
-            // 得到物品的本地化名称
-            String localizedName = event.getItemStack().getHoverName().getString();
-            // 然后到https://search.mcmod.cn/s?key=%s去搜索
-            MainUtil.openSearchPage(localizedName);
-            return;
-        }
+        // 得到物品的本地化名称
+        String localizedName = event.getItemStack().getHoverName().getString();
 
-        // 7. 判断物品页面是否存在，如果不存在则进行搜索
-        if (!MainUtil.itemPageExist(itemMCMODID)) {
-            // 得到物品的本地化名称
-            String localizedName = event.getItemStack().getHoverName().getString();
-            // 然后到https://search.mcmod.cn/s?key=%s去搜索
-            MainUtil.openSearchPage(localizedName);
-            return;
-        }
+        CompletableFuture.runAsync(() -> {
+            // 5. 查找并得到物品在MCMOD中的ID
+            Optional<String> optionalItemMCMODID;
+            try {
+                optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryName);
+            } catch (Exception e) {
+                log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
+                // 发送提示消息
+                if (event.getPlayer() != null) {
+                    event.getPlayer().sendMessage(new TextComponent("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况"), event.getPlayer().getUUID());
+                }
+                return;
+            }
+            if (!optionalItemMCMODID.isPresent()) {
+                return;
+            }
+            String itemMCMODID = optionalItemMCMODID.get();
 
-        // 8. 打开MCMOD的物品页面
-        MainUtil.openItemPage(itemMCMODID);
+            // 6. 如果mcmodItemID为0，则进行搜索
+            if ("0".equals(itemMCMODID)) {
+                // 然后到https://search.mcmod.cn/s?key=%s去搜索
+                MainUtil.openSearchPage(localizedName);
+                return;
+            }
+
+            // 7. 判断物品页面是否存在，如果不存在则进行搜索
+            if (!MainUtil.itemPageExist(itemMCMODID)) {
+                // 然后到https://search.mcmod.cn/s?key=%s去搜索
+                MainUtil.openSearchPage(localizedName);
+                return;
+            }
+
+            // 8. 打开MCMOD的物品页面
+            MainUtil.openItemPage(itemMCMODID);
+        });
     }
 
     /**

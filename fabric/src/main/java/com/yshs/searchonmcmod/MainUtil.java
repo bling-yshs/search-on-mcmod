@@ -55,8 +55,17 @@ public class MainUtil {
         log.info("检查MC百科物品页面是否存在: {}", urlStr);
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        return connection.getResponseCode() == 200;
+        // 设置连接超时为5秒
+        connection.setConnectTimeout(5000);
+        // 设置读取超时为5秒
+        connection.setReadTimeout(5000);
+        try {
+            return connection.getResponseCode() == 200;
+        } finally {
+            connection.disconnect();
+        }
     }
+
 
     /**
      * 打开物品页面
@@ -82,16 +91,24 @@ public class MainUtil {
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
-        int responseCode = connection.getResponseCode();
-        if (responseCode != 200) {
-            log.error("获取物品 ID 失败: {}", responseCode);
-            return Optional.empty();
+        // 设置连接超时为5秒
+        connection.setConnectTimeout(5000);
+        // 设置读取超时为5秒
+        connection.setReadTimeout(5000);
+
+        try {
+            int responseCode = connection.getResponseCode();
+            if (responseCode != 200) {
+                log.error("获取物品 ID 失败: {}", responseCode);
+                return Optional.empty();
+            }
+            @Cleanup BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String mcmodItemID = in.readLine();
+            log.info("获取物品 MCMOD ID 成功: {}", mcmodItemID);
+            return Optional.of(mcmodItemID);
+        } finally {
+            connection.disconnect();
         }
-        @Cleanup BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String mcmodItemID = in.readLine();
-        connection.disconnect();
-        log.info("获取物品 MCMOD ID 成功: {}", mcmodItemID);
-        return Optional.of(mcmodItemID);
     }
 
     /**
