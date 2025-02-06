@@ -1,9 +1,10 @@
 package com.yshs.searchonmcmod;
 
-import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.InputMappings;
-import net.minecraft.util.Util;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -12,41 +13,53 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
+/**
+ * 主类
+ */
 @Mod(SearchOnMcmod.MOD_ID)
+@Slf4j
 public class SearchOnMcmod {
+    /**
+     * MOD ID
+     */
     public static final String MOD_ID = "searchonmcmod";
-    private static final Logger log = LogManager.getLogger();
-    private static boolean keyDown = false;
+    private final AtomicBoolean allowOpenUrl = new AtomicBoolean(false);
+    private final AtomicBoolean keyPressedFlag = new AtomicBoolean(false);
 
+    /**
+     * 构造函数
+     */
     public SearchOnMcmod() {
         MinecraftForge.EVENT_BUS.register(this);
     }
 
+    /**
+     * 在物品tooltip渲染事件时触发
+     *
+     * @param event 物品tooltip事件，渲染物品信息时触发
+     */
     @SubscribeEvent
     @SneakyThrows
     public void onRenderTooltipEvent(ItemTooltipEvent event) {
-        if (keyDown == false) {
+        if (!allowOpenUrl.getAndSet(false)) {
             return;
         }
-        keyDown = false;
+        log.info("allowOpenUrl设置为false");
         // 1. 得到物品的描述ID
         String descriptionId = event.getItemStack().getItem().getDescriptionId();
         if (StringUtils.isBlank(descriptionId)) {
             return;
         }
         // 2. 转换为注册表名
-        String registryName = SearchOnMcmod.convertDescriptionIdToRegistryName(descriptionId);
+        String registryName = MainUtil.convertDescriptionIdToRegistryName(descriptionId);
         // 3. 如果注册表名为空气，则不进行搜索
         if ("minecraft:air".equals(registryName)) {
             return;
@@ -56,61 +69,88 @@ public class SearchOnMcmod {
             MainUtil.openSearchPage(descriptionId);
             return;
         }
-        // 5. 查找并得到物品在MCMOD中的ID
-        String urlStr = String.format("https://api.mcmod.cn/getItem/?regname=%s", registryName);
-        URL url = new URL(urlStr);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode != 200) {
-            return;
-        }
+        // 得到物品的本地化名称
+        String localizedName = event.getItemStack().getHoverName().getString();
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String mcmodItemID = in.readLine();
-        in.close();
-        connection.disconnect();
-        log.info("mcmodItemID: {}", mcmodItemID);
+        CompletableFuture.runAsync(() -> {
+            // 5. 查找并得到物品在MCMOD中的ID
+            Optional<String> optionalItemMCMODID;
+            try {
+                optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryName);
+            } catch (Exception e) {
+                log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
+                // 发送提示消息
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance().player.sendMessage(new TranslationTextComponent("text.searchonmcmod.mcmodid_not_found"), Minecraft.getInstance().player.getUUID());
+                }
+                return;
+            }
+            if (!optionalItemMCMODID.isPresent()) {
+                return;
+            }
+            String itemMCMODID = optionalItemMCMODID.get();
 
-        // 5. 如果mcmodItemID为0，则进行搜索
-        if ("0".equals(mcmodItemID)) {
-            // 得到物品的本地化名称
-            String localizedName = event.getItemStack().getHoverName().getString();
-            // 然后到https://search.mcmod.cn/s?key=%s去搜索
-            MainUtil.openSearchPage(localizedName);
-            return;
-        }
+            // 6. 如果mcmodItemID为0，则进行搜索
+            if ("0".equals(itemMCMODID)) {
+                // 然后到https://search.mcmod.cn/s?key=%s去搜索
+                MainUtil.openSearchPage(localizedName);
+                return;
+            }
 
-        // 6. 打开MCMOD的物品页面
-        String mcmodPageUrl = String.format("https://www.mcmod.cn/item/%s.html", mcmodItemID);
-        log.info("mcmodPageUrl: {}", mcmodPageUrl);
-        Util.getPlatform().openUri(mcmodPageUrl);
+            // 7. 判断物品页面是否存在，如果不存在则进行搜索
+            if (!MainUtil.itemPageExist(itemMCMODID)) {
+                // 然后到https://search.mcmod.cn/s?key=%s去搜索
+                MainUtil.openSearchPage(localizedName);
+                return;
+            }
 
+            // 8. 打开MCMOD的物品页面
+            MainUtil.openItemPage(itemMCMODID);
+        });
     }
 
+    /**
+     * @param event 键盘按下事件
+     */
     @SubscribeEvent
     public void onKeyPressed(GuiScreenEvent.KeyboardKeyPressedEvent.Post event) {
-        int keyCode = event.getKeyCode();
-        InputMappings.Input key = SEARCH_ON_MCMOD_KEY.getKey();
-        if (keyCode == key.getValue() && keyDown == false) {
-            keyDown = true;
-            log.info("按键已按下，keyDown设置为true");
+        int eventKeyCode = event.getKeyCode();
+        InputMappings.Input settingsKey = SEARCH_ON_MCMOD_KEY.getKey();
+        if (eventKeyCode != settingsKey.getValue()) {
+            return;
         }
+        if (keyPressedFlag.get()) {
+            return;
+        }
+        keyPressedFlag.set(true);
+        allowOpenUrl.set(true);
+        log.info("SEARCH_ON_MCMOD_KEY按键已按下，keyPressedFlag，allowOpenUrl设置为true");
     }
 
+    /**
+     * @param event 键盘释放事件
+     */
     @SubscribeEvent
     public void onKeyReleased(GuiScreenEvent.KeyboardKeyReleasedEvent.Post event) {
-        int keyCode = event.getKeyCode();
-        if (keyCode == SEARCH_ON_MCMOD_KEY.getKey().getValue()) {
-            keyDown = false;
-            log.info("按键已释放，keyDown设置为false");
+        int eventKeyCode = event.getKeyCode();
+        InputMappings.Input settingsKey = SEARCH_ON_MCMOD_KEY.getKey();
+        if (eventKeyCode != settingsKey.getValue()) {
+            return;
         }
+        keyPressedFlag.set(false);
+        log.info("SEARCH_ON_MCMOD_KEY按键已释放，keyPressedFlag设置为false");
     }
 
+    /**
+     * 客户端事件
+     */
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
 
+        /**
+         * @param event 事件
+         */
         @SubscribeEvent
         public static void setup(final FMLCommonSetupEvent event) {
             ClientRegistry.registerKeyBinding(SEARCH_ON_MCMOD_KEY);
@@ -118,16 +158,4 @@ public class SearchOnMcmod {
 
     }
 
-    public static String convertDescriptionIdToRegistryName(@NonNull String descriptionId) {
-        // 将输入字符串按"."分割
-        String[] parts = descriptionId.split("\\.");
-
-        // 返回格式化后的字符串
-        if (parts.length >= 2) {
-            return parts[1] + ":" + parts[2];
-        } else {
-            // 如果格式不符合预期，返回空字符串
-            return "";
-        }
-    }
 }
