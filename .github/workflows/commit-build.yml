@@ -24,8 +24,7 @@ jobs:
       - name: 构建项目 (Build project)
         id: gradle-build
         run: |
-          ./gradlew build --no-daemon
-          echo "version=$(./gradlew -q printVersion --no-daemon)" >> $GITHUB_OUTPUT
+          echo "version=$(./gradlew -q printVersion --no-daemon)"
 
       - name: 上传构建产物 (Upload artifacts)
         uses: actions/upload-artifact@v4
