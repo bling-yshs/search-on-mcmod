@@ -3,8 +3,9 @@ package com.yshs.searchonmcmod;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import net.minecraft.util.Util;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,8 +17,8 @@ import java.util.Optional;
 /**
  * 通用工具类
  */
-@Slf4j
 public class MainUtil {
+    private static final Logger log = LogManager.getLogger();
     /**
      * 搜索页面 URL
      */
