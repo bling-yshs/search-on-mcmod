@@ -1,0 +1,5 @@
+{
+  "key.categories.searchonmcmod": "Search on MCMOD",
+  "key.searchonmcmod.search_on_mcmod": "在 MC百科 中搜尋",
+  "text.searchonmcmod.mcmodid_not_found": "MC百科搜索: 無法透過百科 API 取得物品 MCMOD ID，請檢查您的網路情況"
+}
