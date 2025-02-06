@@ -33,7 +33,7 @@ jobs:
           
       - name: 获取当前版本号 (Get current version)
         run: |
-          python .github/scripts/parse_version.py >> $GITHUB_OUTPUT
+          echo "version=$(python .github/scripts/parse_version.py)" >> $GITHUB_OUTPUT
 
       - name: 上传构建产物 (Upload artifacts)
         uses: actions/upload-artifact@v4
