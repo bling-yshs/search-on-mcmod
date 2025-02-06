@@ -83,7 +83,7 @@ public class SearchOnMcmod {
                 // 发送提示消息
                 LocalPlayer player = Minecraft.getInstance().player;
                 if (player != null) {
-                    player.sendSystemMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"));
+                    player.displayClientMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"),false);
                 }
                 return;
             }
@@ -115,7 +115,7 @@ public class SearchOnMcmod {
      * @param event 键盘按下事件
      */
     @SubscribeEvent
-    public void onKeyPressed(ScreenEvent.KeyPressed.Post event) {
+    public void onKeyPressed(ScreenEvent.KeyReleased.Pre event) {
         int eventKeyCode = event.getKeyCode();
         InputConstants.Key settingsKey = SEARCH_ON_MCMOD_KEY.getKey();
         if (eventKeyCode != settingsKey.getValue()) {
