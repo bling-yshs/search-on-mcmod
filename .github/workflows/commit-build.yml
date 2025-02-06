@@ -30,8 +30,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-          
+
       - name: 获取当前版本号 (Get current version)
+        id: get-version
         run: |
           echo "version=$(python .github/scripts/parse_version.py)" >> $GITHUB_OUTPUT
 
@@ -53,7 +54,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: "v${{ steps.gradle-build.outputs.version }}"
+          tag: "v${{ steps.get-version.outputs.version }}"
           prerelease: true
           allowUpdates: true
           updateOnlyUnreleased: true
