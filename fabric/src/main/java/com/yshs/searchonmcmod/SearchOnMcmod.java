@@ -81,7 +81,7 @@ public class SearchOnMcmod implements ModInitializer {
                 // 发送提示消息
                 LocalPlayer player = Minecraft.getInstance().player;
                 if (player != null) {
-                    player.sendSystemMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"));
+                    player.displayClientMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"), false);
                 }
                 return;
             }
