@@ -84,7 +84,7 @@ public class SearchOnMcmod {
                 // 发送提示消息
                 LocalPlayer player = Minecraft.getInstance().player;
                 if (player != null) {
-                    player.sendSystemMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"));
+                    player.displayClientMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"), false);
                 }
                 return;
             }
@@ -128,6 +128,20 @@ public class SearchOnMcmod {
         keyPressedFlag.set(true);
         allowOpenUrl.set(true);
         log.info("SEARCH_ON_MCMOD_KEY按键已按下，keyPressedFlag，allowOpenUrl设置为true");
+    }
+
+    /**
+     * @param event 键盘释放事件
+     */
+    @SubscribeEvent
+    public void onKeyReleased(ScreenEvent.KeyReleased.Post event) {
+        int eventKeyCode = event.getKeyCode();
+        InputConstants.Key settingsKey = SEARCH_ON_MCMOD_KEY.getKey();
+        if (eventKeyCode != settingsKey.getValue()) {
+            return;
+        }
+        keyPressedFlag.set(false);
+        log.info("SEARCH_ON_MCMOD_KEY按键已释放，keyPressedFlag设置为false");
     }
 
     /**
