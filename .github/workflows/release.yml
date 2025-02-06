@@ -69,14 +69,6 @@ jobs:
           out-file-path: release_assets
           fileName: '*.jar'
 
-      - name: 设置矩阵 (Set matrix)
-        id: set-matrix
-        env:
-          GITHUB_SELECTED_VERSIONS: ${{ steps.get-selected-versions.outputs.versions }}
-        run: |
-          output=$(python .github/scripts/upload_modrinth.py)
-          echo "matrix=$output" >> $GITHUB_OUTPUT
-
       - name: 获取选中的版本 (Get selected versions)
         id: get-selected-versions
         run: |
@@ -89,6 +81,21 @@ jobs:
           ${{ inputs.mc_1_16_5 == true }} && versions+=("1.16.5")
           ${{ inputs.mc_1_12_2 == true }} && versions+=("1.12.2")
           echo "versions=${versions[*]}" >> $GITHUB_OUTPUT
+
+      - name: 设置矩阵 (Set matrix)
+        id: set-matrix
+        env:
+          GITHUB_SELECTED_VERSIONS: ${{ steps.get-selected-versions.outputs.versions }}
+        run: |
+          output=$(python .github/scripts/upload_modrinth.py)
+          echo "matrix=$output" >> $GITHUB_OUTPUT
+
+      - name: 检查矩阵是否为空 (Check if matrix is empty)
+        run: |
+          if [ "${{ steps.set-matrix.outputs.matrix }}" = '{"include":[]}' ]; then
+            echo "没有选择任何版本进行发布！"
+            exit 1
+          fi
 
   upload-to-modrinth:
     needs: setup
