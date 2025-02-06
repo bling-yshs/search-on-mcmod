@@ -24,7 +24,16 @@ jobs:
       - name: 构建项目 (Build project)
         id: gradle-build
         run: |
-          echo "version=$(./gradlew -q printVersion --no-daemon)"
+          ./gradlew build --no-daemon
+
+      - name: 安装 Python (Set up Python)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          
+      - name: 获取当前版本号 (Get current version)
+        run: |
+          python .github/scripts/parse_version.py >> $GITHUB_OUTPUT
 
       - name: 上传构建产物 (Upload artifacts)
         uses: actions/upload-artifact@v4
