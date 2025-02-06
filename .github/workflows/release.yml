@@ -7,6 +7,19 @@ on:
         description: '输入要发布的版本号'
         required: true
         type: string
+      mc_versions:
+        description: '选择要发布的 Minecraft 版本'
+        required: true
+        type: choice
+        options:
+          - '1.21.x'
+          - '1.20.6'
+          - '1.20.x'
+          - '1.19.x'
+          - '1.18.x'
+          - '1.16.5'
+          - '1.12.2'
+        multiple: true
 
 jobs:
   setup:
@@ -43,6 +56,8 @@ jobs:
 
       - name: 设置矩阵 (Set matrix)
         id: set-matrix
+        env:
+          GITHUB_SELECTED_VERSIONS: ${{ join(github.event.inputs.mc_versions, ',') }}
         run: |
           output=$(python .github/scripts/upload_modrinth.py)
           echo "matrix=$output" >> $GITHUB_OUTPUT

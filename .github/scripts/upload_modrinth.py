@@ -36,10 +36,15 @@ def parse_filename(filename):
     return None
 
 def main():
+    # 获取选中的版本列表
+    selected_versions = os.environ.get('GITHUB_SELECTED_VERSIONS', '').split(',')
+    
     matrix = []
     for file in Path("./release_assets").glob("*.jar"):
         if meta := parse_filename(file):
-            matrix.append(meta)
+            # 只添加选中版本的文件
+            if any(meta['mc_version'] == version for version in selected_versions):
+                matrix.append(meta)
 
     print(json.dumps({"include": matrix}))
 
