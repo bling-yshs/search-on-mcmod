@@ -3,6 +3,9 @@ package com.yshs.searchonmcmod;
 import com.mojang.blaze3d.platform.InputConstants;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -11,7 +14,6 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.StringUtils;
-import net.minecraft.network.chat.TextComponent;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -79,8 +81,9 @@ public class SearchOnMcmod {
             } catch (Exception e) {
                 log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
                 // 发送提示消息
-                if (event.getPlayer() != null) {
-                    event.getPlayer().sendMessage(new TextComponent("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况"), event.getPlayer().getUUID());
+                LocalPlayer player = Minecraft.getInstance().player;
+                if (player != null) {
+                    player.sendSystemMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"));
                 }
                 return;
             }

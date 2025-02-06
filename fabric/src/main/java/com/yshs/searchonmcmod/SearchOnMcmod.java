@@ -6,8 +6,8 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.apache.commons.lang3.StringUtils;
@@ -77,8 +77,9 @@ public class SearchOnMcmod implements ModInitializer {
             } catch (Exception e) {
                 log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
                 // 发送提示消息
-                if (Minecraft.getInstance().player != null) {
-                    Minecraft.getInstance().player.sendMessage(new TranslatableComponent("text.searchonmcmod.mcmodid_not_found"), Minecraft.getInstance().player.getUUID());
+                LocalPlayer player = Minecraft.getInstance().player;
+                if (player != null) {
+                    player.sendSystemMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"));
                 }
                 return;
             }
