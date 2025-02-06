@@ -49,6 +49,7 @@ jobs:
           prerelease: true
           allowUpdates: true
           updateOnlyUnreleased: true
+          omitBodyDuringUpdate: true
           #          body: |
           #            ${{ steps.changelog.outputs.compareurl }}
           #            ${{ steps.changelog.outputs.changelog }}
