@@ -10,31 +10,31 @@ on:
       mc_1_21_x:
         description: '发布 1.21.x 版本'
         type: boolean
-        default: true
+        default: false
       mc_1_20_6:
         description: '发布 1.20.6 版本'
         type: boolean
-        default: true
+        default: false
       mc_1_20_x:
         description: '发布 1.20.x 版本'
         type: boolean
-        default: true
+        default: false
       mc_1_19_x:
         description: '发布 1.19.x 版本'
         type: boolean
-        default: true
+        default: false
       mc_1_18_x:
         description: '发布 1.18.x 版本'
         type: boolean
-        default: true
+        default: false
       mc_1_16_5:
         description: '发布 1.16.5 版本'
         type: boolean
-        default: true
+        default: false
       mc_1_12_2:
         description: '发布 1.12.2 版本'
         type: boolean
-        default: true
+        default: false
 
 jobs:
   setup:
