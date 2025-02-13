@@ -30,8 +30,8 @@ public class SearchOnMcmod {
      */
     public static final String MOD_ID = "searchonmcmod";
     private static final Logger log = LogManager.getLogger();
-    private final AtomicBoolean allowOpenUrl = new AtomicBoolean(false);
     private final AtomicBoolean keyPressedFlag = new AtomicBoolean(false);
+    private final AtomicBoolean hasTriggeredSearch = new AtomicBoolean(false);
 
     /**
      * 构造函数
@@ -49,10 +49,11 @@ public class SearchOnMcmod {
     @SubscribeEvent
     @SneakyThrows
     public void onRenderTooltipEvent(ItemTooltipEvent event) {
-        if (!allowOpenUrl.getAndSet(false)) {
+        if (!keyPressedFlag.get() || hasTriggeredSearch.get()) {
             return;
         }
-        log.info("allowOpenUrl设置为false");
+        hasTriggeredSearch.set(true);
+        log.info("触发了MC百科搜索");
         // 1. 得到物品的注册表名
         ResourceLocation registryName = event.getItemStack().getItem().getRegistryName();
         if (registryName == null) {
@@ -77,7 +78,8 @@ public class SearchOnMcmod {
             } catch (Exception e) {
                 log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
                 // 发送提示消息
-                Minecraft.getMinecraft().player.sendMessage(new TextComponentTranslation("text.searchonmcmod.mcmodid_not_found"));
+                Minecraft.getMinecraft().player
+                        .sendMessage(new TextComponentTranslation("text.searchonmcmod.mcmodid_not_found"));
                 return;
             }
             if (!optionalItemMCMODID.isPresent()) {
@@ -114,8 +116,8 @@ public class SearchOnMcmod {
     public void onKeyPressed(GuiScreenEvent.KeyboardInputEvent.Pre event) {
         if (Keyboard.isKeyDown(SEARCH_ON_MCMOD_KEY.getKeyCode()) && !keyPressedFlag.get()) {
             keyPressedFlag.set(true);
-            allowOpenUrl.set(true);
-            log.info("按键已按下，keyPressedFlag和allowOpenUrl设置为true");
+            hasTriggeredSearch.set(false);
+            log.info("按键已按下，keyPressedFlag设置为true");
         }
     }
 
@@ -128,6 +130,7 @@ public class SearchOnMcmod {
     public void onKeyReleased(GuiScreenEvent.KeyboardInputEvent.Post event) {
         if (!Keyboard.isKeyDown(SEARCH_ON_MCMOD_KEY.getKeyCode()) && keyPressedFlag.get()) {
             keyPressedFlag.set(false);
+            hasTriggeredSearch.set(false);
             log.info("按键已释放，keyPressedFlag设置为false");
         }
     }
