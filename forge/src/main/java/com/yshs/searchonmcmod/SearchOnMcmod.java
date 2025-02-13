@@ -31,8 +31,8 @@ public class SearchOnMcmod {
      * MOD ID
      */
     public static final String MOD_ID = "searchonmcmod";
-    private final AtomicBoolean allowOpenUrl = new AtomicBoolean(false);
     private final AtomicBoolean keyPressedFlag = new AtomicBoolean(false);
+    private final AtomicBoolean hasTriggeredSearch = new AtomicBoolean(false);
 
     /**
      * 构造函数
@@ -49,10 +49,14 @@ public class SearchOnMcmod {
     @SubscribeEvent
     @SneakyThrows
     public void onRenderTooltipEvent(ItemTooltipEvent event) {
-        if (!allowOpenUrl.getAndSet(false)) {
+        // 检查是否按下快捷键且还未触发过搜索
+        if (!keyPressedFlag.get() || hasTriggeredSearch.get()) {
             return;
         }
-        log.info("allowOpenUrl设置为false");
+        // 设置已触发标志，保证一次按键只触发一次
+        hasTriggeredSearch.set(true);
+        log.info("触发了MC百科搜索");
+
         // 1. 得到物品的描述ID
         String descriptionId = event.getItemStack().getItem().getDescriptionId();
         if (StringUtils.isBlank(descriptionId)) {
@@ -83,7 +87,7 @@ public class SearchOnMcmod {
                 // 发送提示消息
                 LocalPlayer player = Minecraft.getInstance().player;
                 if (player != null) {
-                    player.displayClientMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"),false);
+                    player.displayClientMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"), false);
                 }
                 return;
             }
@@ -115,7 +119,7 @@ public class SearchOnMcmod {
      * @param event 键盘按下事件
      */
     @SubscribeEvent
-    public void onKeyPressed(ScreenEvent.KeyReleased.Pre event) {
+    public void onKeyPressed(ScreenEvent.KeyPressed.Pre event) {
         int eventKeyCode = event.getKeyCode();
         InputConstants.Key settingsKey = SEARCH_ON_MCMOD_KEY.getKey();
         if (eventKeyCode != settingsKey.getValue()) {
@@ -125,8 +129,9 @@ public class SearchOnMcmod {
             return;
         }
         keyPressedFlag.set(true);
-        allowOpenUrl.set(true);
-        log.info("SEARCH_ON_MCMOD_KEY按键已按下，keyPressedFlag，allowOpenUrl设置为true");
+        // 重置触发标志
+        hasTriggeredSearch.set(false);
+        log.info("SEARCH_ON_MCMOD_KEY按键已按下，keyPressedFlag设置为true");
     }
 
     /**
@@ -140,6 +145,8 @@ public class SearchOnMcmod {
             return;
         }
         keyPressedFlag.set(false);
+        // 重置触发标志
+        hasTriggeredSearch.set(false);
         log.info("SEARCH_ON_MCMOD_KEY按键已释放，keyPressedFlag设置为false");
     }
 
