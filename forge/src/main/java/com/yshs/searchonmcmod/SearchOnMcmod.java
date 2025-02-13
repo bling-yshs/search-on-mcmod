@@ -55,7 +55,7 @@ public class SearchOnMcmod {
         }
         // 设置已触发标志，保证一次按键只触发一次
         hasTriggeredSearch.set(true);
-
+        log.info("触发了MC百科搜索");
         // 1. 得到物品的描述ID
         String descriptionId = event.getItemStack().getItem().getDescriptionId();
         if (StringUtils.isBlank(descriptionId)) {
