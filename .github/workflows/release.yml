@@ -73,13 +73,14 @@ jobs:
         id: get-selected-versions
         run: |
           versions=()
-          ${{ inputs.mc_1_21_x == true }} && versions+=("1.21.x")
-          ${{ inputs.mc_1_20_6 == true }} && versions+=("1.20.6")
-          ${{ inputs.mc_1_20_x == true }} && versions+=("1.20.x")
-          ${{ inputs.mc_1_19_x == true }} && versions+=("1.19.x")
-          ${{ inputs.mc_1_18_x == true }} && versions+=("1.18.x")
-          ${{ inputs.mc_1_16_5 == true }} && versions+=("1.16.5")
-          ${{ inputs.mc_1_12_2 == true }} && versions+=("1.12.2")
+          if [[ "${{ inputs.mc_1_21_x }}" == "true" ]]; then versions+=("1.21.x"); fi
+          if [[ "${{ inputs.mc_1_20_6 }}" == "true" ]]; then versions+=("1.20.6"); fi
+          if [[ "${{ inputs.mc_1_20_x }}" == "true" ]]; then versions+=("1.20.x"); fi
+          if [[ "${{ inputs.mc_1_19_x }}" == "true" ]]; then versions+=("1.19.x"); fi
+          if [[ "${{ inputs.mc_1_18_x }}" == "true" ]]; then versions+=("1.18.x"); fi
+          if [[ "${{ inputs.mc_1_16_5 }}" == "true" ]]; then versions+=("1.16.5"); fi
+          if [[ "${{ inputs.mc_1_12_2 }}" == "true" ]]; then versions+=("1.12.2"); fi
+          echo "Selected versions: ${versions[*]}"  # 打印选中的版本
           echo "versions=${versions[*]}" >> $GITHUB_OUTPUT
 
       - name: 设置矩阵 (Set matrix)
