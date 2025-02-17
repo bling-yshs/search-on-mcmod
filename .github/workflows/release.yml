@@ -80,7 +80,8 @@ jobs:
           if [[ "${{ inputs.mc_1_18_x }}" == "true" ]]; then versions+=("1.18.x"); fi
           if [[ "${{ inputs.mc_1_16_5 }}" == "true" ]]; then versions+=("1.16.5"); fi
           if [[ "${{ inputs.mc_1_12_2 }}" == "true" ]]; then versions+=("1.12.2"); fi
-          echo "Selected versions: ${versions[*]}"  # 打印选中的版本
+          IFS=,
+          echo "Selected versions: ${versions[*]}"  # 打印选中的版本时也使用逗号分隔
           echo "versions=${versions[*]}" >> $GITHUB_OUTPUT
 
       - name: 设置矩阵 (Set matrix)
