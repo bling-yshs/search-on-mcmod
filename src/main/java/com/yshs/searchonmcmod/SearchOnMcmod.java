@@ -42,6 +42,25 @@ public class SearchOnMcmod {
     }
 
     /**
+     * 安全检查键盘按键状态，避免无效键码导致异常
+     *
+     * @param keyCode 键码
+     * @return 是否按下
+     */
+    private boolean isKeyDownSafe(int keyCode) {
+        try {
+            // 检查键码是否有效
+            if (keyCode <= 0 || keyCode >= Keyboard.KEYBOARD_SIZE) {
+                return false;
+            }
+            return Keyboard.isKeyDown(keyCode);
+        } catch (Exception e) {
+            log.error("检查按键状态时出错：{}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * 在物品tooltip渲染事件时触发
      *
      * @param event 物品tooltip事件，渲染物品信息时触发
@@ -114,7 +133,7 @@ public class SearchOnMcmod {
      */
     @SubscribeEvent
     public void onKeyPressed(GuiScreenEvent.KeyboardInputEvent.Pre event) {
-        if (Keyboard.isKeyDown(SEARCH_ON_MCMOD_KEY.getKeyCode()) && !keyPressedFlag.get()) {
+        if (this.isKeyDownSafe(SEARCH_ON_MCMOD_KEY.getKeyCode()) && !keyPressedFlag.get()) {
             keyPressedFlag.set(true);
             hasTriggeredSearch.set(false);
             log.info("按键已按下，keyPressedFlag设置为true");
@@ -128,7 +147,7 @@ public class SearchOnMcmod {
      */
     @SubscribeEvent
     public void onKeyReleased(GuiScreenEvent.KeyboardInputEvent.Post event) {
-        if (!Keyboard.isKeyDown(SEARCH_ON_MCMOD_KEY.getKeyCode()) && keyPressedFlag.get()) {
+        if (!this.isKeyDownSafe(SEARCH_ON_MCMOD_KEY.getKeyCode()) && keyPressedFlag.get()) {
             keyPressedFlag.set(false);
             hasTriggeredSearch.set(false);
             log.info("按键已释放，keyPressedFlag设置为false");
