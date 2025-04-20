@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: '输入要发布的版本号'
+        description: '输入要发布的版本号（不需要带v）'
         required: true
         type: string
       skip_version_check:
