@@ -7,6 +7,10 @@ on:
         description: '输入要发布的版本号'
         required: true
         type: string
+      skip_version_check:
+        description: '跳过版本号检查（确认不使用最新发布版本时勾选）'
+        type: boolean
+        default: false
       mc_1_21_x:
         description: '发布 1.21.x 版本'
         type: boolean
@@ -51,6 +55,7 @@ jobs:
           echo "latest_version=$latest_version" >> $GITHUB_ENV
 
       - name: 检查版本号 (Check version)
+        if: ${{ !inputs.skip_version_check }}
         run: |
           if [ "v${{ github.event.inputs.version }}" != "$latest_version" ]; then
             echo "输入的版本号 ${GITHUB_EVENT_INPUT_VERSION} 不等于最新发布版本 ${latest_version}，请检查！"
