@@ -2,25 +2,22 @@ package com.yshs.searchonmcmod;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import org.lwjgl.glfw.GLFW;
 
-/**
- * 按键绑定
- */
+import static com.yshs.searchonmcmod.SearchOnMcmod.MOD_ID;
+
 public class KeyBindings {
 
-    private static final String KEY_CATEGORY = "key.categories.searchonmcmod";
+    public static final KeyMapping.Category SEARCHONMCMOD_CATEGORY =
+            new KeyMapping.Category(ResourceLocation.fromNamespaceAndPath(MOD_ID, "categories"));
 
-    /**
-     * 搜索MC百科按键
-     */
     public static final KeyMapping SEARCH_ON_MCMOD_KEY = new KeyMapping(
             "key.searchonmcmod.search_on_mcmod",
             KeyConflictContext.GUI,
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_B,
-            KEY_CATEGORY
+            SEARCHONMCMOD_CATEGORY
     );
-
 }

@@ -154,7 +154,7 @@ public class SearchOnMcmod {
     /**
      * 客户端MOD事件
      */
-    @EventBusSubscriber(modid = MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MOD_ID, value = Dist.CLIENT)
     public static class ClientModEvents {
 
         /**

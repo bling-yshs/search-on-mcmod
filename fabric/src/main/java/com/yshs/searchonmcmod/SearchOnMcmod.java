@@ -28,7 +28,7 @@ public class SearchOnMcmod implements ModInitializer {
      * 是否按下按键
      */
     public static boolean keyDown = false;
-
+    public static final String MOD_ID = "searchonmcmod";
     @Override
     public void onInitialize() {
         // 注册按键绑定

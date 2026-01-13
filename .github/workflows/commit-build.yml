@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: 克隆当前仓库 (Clone current repo)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 安装 Gradle (Install Gradle)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 21
           distribution: liberica
@@ -28,7 +28,7 @@ jobs:
           echo "version=$(./gradlew -q printVersion --no-daemon)" >> $GITHUB_OUTPUT
 
       - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: neoforge
           if-no-files-found: ignore
@@ -36,7 +36,7 @@ jobs:
             neoforge/build/libs/*[0-9].jar
 
       - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: forge
           if-no-files-found: ignore
@@ -44,7 +44,7 @@ jobs:
             forge/build/libs/*[0-9].jar
 
       - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: fabric
           if-no-files-found: ignore
@@ -57,7 +57,7 @@ jobs:
           name: merged-artifacts
 
       - name: 下载 Artifact (Download Artifact)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: ./download
           name: merged-artifacts
