@@ -52,7 +52,7 @@ function main() {
   const selectedVersions = (process.env.GITHUB_SELECTED_VERSIONS || '').split(',')
 
   const matrix: MatrixItem[] = []
-  const releaseAssetsPath = './release_assets'
+  const releaseAssetsPath = '../../release_assets'
 
   try {
     const files = readdirSync(releaseAssetsPath)

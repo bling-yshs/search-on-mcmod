@@ -71,8 +71,9 @@ jobs:
         with:
           node-version: '24'
 
-      - name: 安装 tsx (Install tsx)
-        run: npm install -g tsx
+      - name: 安装脚本依赖 (Install script dependencies)
+        working-directory: .github/scripts
+        run: npm install
 
       - name: 下载 Release 里的文件 (Download files from Release)
         uses: robinraju/release-downloader@v1
@@ -99,10 +100,11 @@ jobs:
 
       - name: 设置矩阵 (Set matrix)
         id: set-matrix
+        working-directory: .github/scripts
         env:
           GITHUB_SELECTED_VERSIONS: ${{ steps.get-selected-versions.outputs.versions }}
         run: |
-          output=$(node --import tsx .github/scripts/src/upload_modrinth.ts)
+          output=$(npx tsx src/upload_modrinth.ts)
           echo "matrix=$output" >> $GITHUB_OUTPUT
 
       - name: 检查矩阵是否为空 (Check if matrix is empty)
