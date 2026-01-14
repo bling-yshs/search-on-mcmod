@@ -11,8 +11,12 @@ on:
         description: '跳过版本号检查（确认不使用最新发布版本时勾选）'
         type: boolean
         default: false
-      mc_1_21_x:
-        description: '发布 1.21.x 版本'
+      mc_1_21_1_21_8:
+        description: '发布 1.21-1.21.8 版本'
+        type: boolean
+        default: false
+      mc_1_21_9_1_21_10:
+        description: '发布 1.21.9-1.21.10 版本'
         type: boolean
         default: false
       mc_1_20_6:
@@ -47,7 +51,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: 克隆当前仓库 (Clone current repo)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 得到最新发布版本 (Get latest Release)
         run: |
@@ -62,10 +66,13 @@ jobs:
             exit 1
           fi
 
-      - name: 安装 Python (Set up Python)
-        uses: actions/setup-python@v5
+      - name: 安装 Node.js (Set up Node.js)
+        uses: actions/setup-node@v6
         with:
-          python-version: '3.13'
+          node-version: '24'
+
+      - name: 安装 tsx (Install tsx)
+        run: npm install -g tsx
 
       - name: 下载 Release 里的文件 (Download files from Release)
         uses: robinraju/release-downloader@v1
@@ -78,7 +85,8 @@ jobs:
         id: get-selected-versions
         run: |
           versions=()
-          if [[ "${{ inputs.mc_1_21_x }}" == "true" ]]; then versions+=("1.21.x"); fi
+          if [[ "${{ inputs.mc_1_21_1_21_8 }}" == "true" ]]; then versions+=("1.21-1.21.8"); fi
+          if [[ "${{ inputs.mc_1_21_9_1_21_10 }}" == "true" ]]; then versions+=("1.21.9-1.21.10"); fi
           if [[ "${{ inputs.mc_1_20_6 }}" == "true" ]]; then versions+=("1.20.6"); fi
           if [[ "${{ inputs.mc_1_20_x }}" == "true" ]]; then versions+=("1.20.x"); fi
           if [[ "${{ inputs.mc_1_19_x }}" == "true" ]]; then versions+=("1.19.x"); fi
@@ -94,7 +102,7 @@ jobs:
         env:
           GITHUB_SELECTED_VERSIONS: ${{ steps.get-selected-versions.outputs.versions }}
         run: |
-          output=$(python .github/scripts/upload_modrinth.py)
+          output=$(node --import tsx .github/scripts/src/upload_modrinth.ts)
           echo "matrix=$output" >> $GITHUB_OUTPUT
 
       - name: 检查矩阵是否为空 (Check if matrix is empty)
@@ -112,7 +120,7 @@ jobs:
 
     steps:
       - name: 克隆当前仓库 (Clone current repo)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 下载 Release 里的文件 (Download files from Release)
         uses: robinraju/release-downloader@v1
