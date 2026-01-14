@@ -7,12 +7,14 @@
     "lint": "eslint --fix",
     "type-check": "tsc --noEmit"
   },
+  "dependencies": {
+    "tsx": "^4.21.0"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^6.2.0",
     "eslint": "^9.39.1",
     "jiti": "^2.6.1",
     "typescript": "^5.7.3",
-    "@types/node": "^24",
-    "tsx": "^4.21.0"
+    "@types/node": "^24"
   }
 }

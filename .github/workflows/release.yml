@@ -73,7 +73,7 @@ jobs:
 
       - name: 安装脚本依赖 (Install script dependencies)
         working-directory: .github/scripts
-        run: npm install
+        run: npm install --omit=dev
 
       - name: 下载 Release 里的文件 (Download files from Release)
         uses: robinraju/release-downloader@v1
