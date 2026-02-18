@@ -2,16 +2,16 @@ package com.yshs.searchonmcmod;
 
 import lombok.Cleanup;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.Util;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 通用工具类
@@ -37,9 +37,8 @@ public class MainUtil {
      *
      * @param name 物品名称
      */
-    @SneakyThrows
     public static void openSearchPage(@NonNull String name) {
-        String encode = URLEncoder.encode(name, "UTF-8");
+        String encode = URLEncoder.encode(name, StandardCharsets.UTF_8);
         String url = String.format(SEARCH_PAGE_URL, encode);
         log.info("打开MC百科搜索页面: {}", url);
         Util.getPlatform().openUri(url);
@@ -49,8 +48,7 @@ public class MainUtil {
      * @param id 物品 ID
      * @return 物品页面是否存在 true: 存在 false: 不存在
      */
-    @SneakyThrows
-    public static boolean itemPageExist(@NonNull String id) {
+    public static boolean itemPageExist(@NonNull String id) throws IOException {
         String urlStr = String.format(ITEM_PAGE_URL, id);
         log.info("检查MC百科物品页面是否存在: {}", urlStr);
         URL url = new URL(urlStr);
@@ -60,7 +58,14 @@ public class MainUtil {
         // 设置读取超时为5秒
         connection.setReadTimeout(5000);
         try {
-            return connection.getResponseCode() == 200;
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                return true;
+            }
+            if (responseCode == 404) {
+                return false;
+            }
+            throw new IOException("检查物品页面失败，HTTP状态码: " + responseCode);
         } finally {
             connection.disconnect();
         }
@@ -84,8 +89,7 @@ public class MainUtil {
      * @param registryName 物品注册名
      * @return 物品的 MCMOD ID
      */
-    @SneakyThrows
-    public static Optional<String> fetchItemMCMODID(@NonNull String registryName) {
+    public static String fetchItemMCMODID(@NonNull String registryName) throws IOException {
         String urlStr = String.format(FETCH_ITEM_ID_URL, registryName);
         log.info("通过百科API获取物品 ID: {}", urlStr);
         URL url = new URL(urlStr);
@@ -99,13 +103,15 @@ public class MainUtil {
         try {
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
-                log.error("获取物品 ID 失败: {}", responseCode);
-                return Optional.empty();
+                throw new IOException("通过百科 API 获取物品 ID 失败，HTTP状态码: " + responseCode);
             }
             @Cleanup BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String mcmodItemID = in.readLine();
+            if (mcmodItemID == null) {
+                throw new IOException("通过百科 API 获取物品 ID 失败，返回内容为空");
+            }
             log.info("获取物品 MCMOD ID 成功: {}", mcmodItemID);
-            return Optional.of(mcmodItemID);
+            return mcmodItemID;
         } finally {
             connection.disconnect();
         }

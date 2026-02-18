@@ -1,6 +1,5 @@
 package com.yshs.searchonmcmod;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
@@ -13,7 +12,6 @@ import net.minecraft.world.item.TooltipFlag;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
@@ -43,7 +41,6 @@ public class SearchOnMcmod implements ModInitializer {
      * @param tooltipFlag   物品信息提示标志
      * @param componentList 物品信息列表
      */
-    @SneakyThrows
     public void onRenderTooltipEvent(ItemStack itemStack, TooltipFlag tooltipFlag, List<Component> componentList) {
         if (keyDown == false) {
             return;
@@ -62,7 +59,11 @@ public class SearchOnMcmod implements ModInitializer {
         }
         // 4. 如果注册表明为空，但是物品的描述ID不为空，则进行搜索
         if (StringUtils.isBlank(registryName) && StringUtils.isNotBlank(descriptionId)) {
-            MainUtil.openSearchPage(descriptionId);
+            try {
+                MainUtil.openSearchPage(descriptionId);
+            } catch (Exception e) {
+                handleSearchFailure("MC百科搜索: 打开搜索页面失败", e);
+            }
             return;
         }
 
@@ -71,40 +72,41 @@ public class SearchOnMcmod implements ModInitializer {
 
         CompletableFuture.runAsync(() -> {
             // 5. 查找并得到物品在MCMOD中的ID
-            Optional<String> optionalItemMCMODID;
+            String itemMCMODID;
             try {
-                optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryName);
+                itemMCMODID = MainUtil.fetchItemMCMODID(registryName);
             } catch (Exception e) {
-                log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
-                // 发送提示消息
-                LocalPlayer player = Minecraft.getInstance().player;
-                if (player != null) {
-                    player.sendSystemMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"));
+                handleSearchFailure("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID", e);
+                return;
+            }
+
+            try {
+                // 6. 如果mcmodItemID为0，则进行搜索
+                if ("0".equals(itemMCMODID)) {
+                    MainUtil.openSearchPage(localizedName);
+                    return;
                 }
-                return;
-            }
-            if (!optionalItemMCMODID.isPresent()) {
-                return;
-            }
-            String itemMCMODID = optionalItemMCMODID.get();
 
-            // 6. 如果mcmodItemID为0，则进行搜索
-            if ("0".equals(itemMCMODID)) {
-                // 然后到https://search.mcmod.cn/s?key=%s去搜索
-                MainUtil.openSearchPage(localizedName);
-                return;
-            }
+                // 7. 判断物品页面是否存在，如果不存在则进行搜索
+                if (!MainUtil.itemPageExist(itemMCMODID)) {
+                    MainUtil.openSearchPage(localizedName);
+                    return;
+                }
 
-            // 7. 判断物品页面是否存在，如果不存在则进行搜索
-            if (!MainUtil.itemPageExist(itemMCMODID)) {
-                // 然后到https://search.mcmod.cn/s?key=%s去搜索
-                MainUtil.openSearchPage(localizedName);
-                return;
+                // 8. 打开MCMOD的物品页面
+                MainUtil.openItemPage(itemMCMODID);
+            } catch (Exception e) {
+                handleSearchFailure("MC百科搜索: 打开MC百科页面失败", e);
             }
-
-            // 8. 打开MCMOD的物品页面
-            MainUtil.openItemPage(itemMCMODID);
         });
+    }
+
+    private static void handleSearchFailure(String message, Exception e) {
+        log.error(message, e);
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.sendSystemMessage(Component.translatable("text.searchonmcmod.search_failed"));
+        }
     }
 
 }

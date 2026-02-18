@@ -1,5 +1,6 @@
 {
   "key.categories.searchonmcmod": "Search on MCMOD",
   "key.searchonmcmod.search_on_mcmod": "Search on MCMOD",
-  "text.searchonmcmod.mcmodid_not_found": "Search on MCMOD: Unable to retrieve item MCMOD ID through the MCMOD API, please check your network connection"
+  "text.searchonmcmod.mcmodid_not_found": "Search on MCMOD: Unable to retrieve item MCMOD ID through the MCMOD API, please check your network connection",
+  "text.searchonmcmod.search_failed": "Failed to open MCMOD, please check your network connection"
 }
