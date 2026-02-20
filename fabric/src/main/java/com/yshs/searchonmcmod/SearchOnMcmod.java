@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static com.yshs.searchonmcmod.KeyBindings.COPY_ITEM_NAME_KEY;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
 /**
@@ -22,14 +23,19 @@ import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 @Slf4j
 public class SearchOnMcmod implements ModInitializer {
     /**
-     * 是否按下按键
+     * 是否按下搜索按键
      */
-    public static boolean keyDown = false;
+    public static boolean searchKeyDown = false;
+    /**
+     * 是否按下复制名称按键
+     */
+    public static boolean copyNameKeyDown = false;
 
     @Override
     public void onInitialize() {
         // 注册按键绑定
         KeyBindingHelper.registerKeyBinding(SEARCH_ON_MCMOD_KEY);
+        KeyBindingHelper.registerKeyBinding(COPY_ITEM_NAME_KEY);
         // 渲染物品信息时触发
         ItemTooltipCallback.EVENT.register(this::onRenderTooltipEvent);
     }
@@ -42,10 +48,17 @@ public class SearchOnMcmod implements ModInitializer {
      * @param componentList 物品信息列表
      */
     public void onRenderTooltipEvent(ItemStack itemStack, TooltipFlag tooltipFlag, List<Component> componentList) {
-        if (keyDown == false) {
+        if (!searchKeyDown && !copyNameKeyDown) {
             return;
         }
-        keyDown = false;
+        if (copyNameKeyDown) {
+            copyNameKeyDown = false;
+            copyHoveredItemName(itemStack.getHoverName().getString());
+        }
+        if (!searchKeyDown) {
+            return;
+        }
+        searchKeyDown = false;
         // 1. 得到物品的描述ID
         String descriptionId = itemStack.getItem().getDescriptionId();
         if (StringUtils.isBlank(descriptionId)) {
@@ -107,6 +120,15 @@ public class SearchOnMcmod implements ModInitializer {
         if (player != null) {
             player.sendSystemMessage(Component.translatable("text.searchonmcmod.search_failed"));
         }
+    }
+
+    private static void copyHoveredItemName(String localizedName) {
+        if (StringUtils.isBlank(localizedName)) {
+            log.warn("复制鼠标指针下方物品名称失败：名称为空");
+            return;
+        }
+        Minecraft.getInstance().keyboardHandler.setClipboard(localizedName);
+        log.info("已复制鼠标指针下方物品名称到剪贴板: {}", localizedName);
     }
 
 }

@@ -47,7 +47,9 @@ public class MainUtil {
     /**
      * @param id 物品 ID
      * @return 物品页面是否存在 true: 存在 false: 不存在
+     * @throws IOException 当 HTTP 请求失败或返回非预期状态码时抛出
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean itemPageExist(@NonNull String id) throws IOException {
         String urlStr = String.format(ITEM_PAGE_URL, id);
         log.info("检查MC百科物品页面是否存在: {}", urlStr);
@@ -88,6 +90,7 @@ public class MainUtil {
      *
      * @param registryName 物品注册名
      * @return 物品的 MCMOD ID
+     * @throws IOException 当 HTTP 请求失败或返回内容无效时抛出
      */
     public static String fetchItemMCMODID(@NonNull String registryName) throws IOException {
         String urlStr = String.format(FETCH_ITEM_ID_URL, registryName);
@@ -118,9 +121,9 @@ public class MainUtil {
     }
 
     /**
-     * 将物品描述ID转换为注册表名
+     * 将物品描述 ID 转换为注册表名
      *
-     * @param descriptionId 物品描述ID
+     * @param descriptionId 物品描述 ID
      * @return 注册表名
      */
     public static String convertDescriptionIdToRegistryName(@NonNull String descriptionId) {

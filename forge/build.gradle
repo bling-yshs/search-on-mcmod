@@ -1,88 +1,49 @@
 plugins {
-    id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'multiloader-loader'
+    id 'net.neoforged.moddev.legacyforge'
 }
 
-version = mod_version
-group = mod_group_id
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
 
-base {
-    archivesName = "searchonmcmod-forge-${support_version}"
-}
+    validateAccessTransformers = true
 
-tasks.withType(JavaExec).configureEach {
-    jvmArgs = ['-XX:+AllowEnhancedClassRedefinition']
-}
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-minecraft {
-    mappings channel: mapping_channel, version: "${parchment_date}-${minecraft_version}"
-    copyIdeResources = true
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers = ['src/main/resources/META-INF/accesstransformer.cfg']
+    }
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
     runs {
-        configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                "${mod_id}" {
-                    source sourceSets.main
-                }
-            }
-        }
-
         client {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            client()
         }
-
-        server {
-            property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
-        }
-
-        gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
         data {
-            workingDirectory project.file('run-data')
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+        server {
+            server()
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
         }
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
-repositories {
-    mavenCentral()
-    maven {
-        name = "forge center"
-        url = 'https://maven.minecraftforge.net/'
-    }
-}
+sourceSets.main.resources.srcDir 'src/generated/resources'
 
 dependencies {
+    compileOnly project(':common')
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 }
 
-tasks.named('processResources', ProcessResources).configure {
-    def replaceProperties = [
-            mod_id                    : mod_id,
-            mod_version               : mod_version,
-            mod_name                  : mod_name,
-            mod_description           : mod_description,
-            mod_authors               : mod_authors,
-            mod_license               : mod_license,
-            minecraft_version         : minecraft_version,
-            github_url                : github_url,
-            forge_loader_version_range: forge_loader_version_range,
-    ]
-    inputs.properties replaceProperties
-
-    filesMatching('META-INF/mods.toml') {
-        expand replaceProperties + [project: project]
-    }
+jar {
+    finalizedBy('reobfJar')
 }

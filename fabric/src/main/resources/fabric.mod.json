@@ -1,31 +1,34 @@
 {
-    "schemaVersion": 1,
-    "id": "${mod_id}",
-    "version": "${mod_version}",
-    "name": "${mod_name}",
-    "description": "${mod_description}",
-    "authors": [
-        "${mod_authors}"
-    ],
-    "contact": {
-        "homepage": "${github_url}",
-        "sources": "${github_url}"
-    },
-    "license": "${mod_license}",
-    "icon": "logo.png",
-    "environment": "*",
-    "entrypoints": {
-        "main": [
-          "com.yshs.searchonmcmod.SearchOnMcmod"
-        ]
-    },
-    "mixins": [
-        "searchonmcmod.fabric.mixins.json"
-    ],
-    "depends": {
-        "fabricloader": "*"
-    },
-    "suggests": {
-        "another-mod": "*"
-    }
+  "schemaVersion": 1,
+  "id": "searchonmcmod",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${description}",
+  "authors": [
+    "${mod_author}"
+  ],
+  "contact": {
+    "homepage": "${github_url}",
+    "sources": "${github_url}"
+  },
+  "license": "${license}",
+  "icon": "logo.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.yshs.searchonmcmod.SearchOnMcmod"
+    ]
+  },
+  "mixins": [
+    "${mod_id}.fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "java": ">=${java_version}"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
 }

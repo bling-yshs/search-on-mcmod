@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.concurrent.CompletableFuture;
 
+import static com.yshs.searchonmcmod.KeyBindings.COPY_ITEM_NAME_KEY;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
 /**
@@ -24,25 +25,36 @@ public class ScreenMixin {
     @Inject(at = @At("HEAD"), method = "keyPressed")
     @SneakyThrows
     private void on(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
-        // 使用Mixin获取key
-        InputConstants.Key key = ((KeyMappingMixin) SEARCH_ON_MCMOD_KEY).getKey();
+        handlePressedKey(SEARCH_ON_MCMOD_KEY, keyCode, true);
+        handlePressedKey(COPY_ITEM_NAME_KEY, keyCode, false);
+    }
 
-        // 检查按键是否匹配
-        if (key.getValue() == keyCode) {
-            SearchOnMcmod.keyDown = true;
-            log.info("SEARCH_ON_MCMOD_KEY按键已按下，keyDown设置为true");
-
-            // Java 8 的延迟执行方式
-            CompletableFuture.supplyAsync(() -> {
-                try {
-                    Thread.sleep(100);
-                    SearchOnMcmod.keyDown = false;
-                    log.info("SEARCH_ON_MCMOD_KEY按键自动释放，keyDown设置为false");
-                } catch (InterruptedException e) {
-                    log.error("Delayed key up interrupted", e);
-                }
-                return null;
-            });
+    private static void handlePressedKey(net.minecraft.client.KeyMapping keyMapping, int keyCode, boolean searchKey) {
+        InputConstants.Key key = ((KeyMappingMixin) keyMapping).getKey();
+        if (key.getValue() != keyCode) {
+            return;
         }
+        if (searchKey) {
+            SearchOnMcmod.searchKeyDown = true;
+            log.info("SEARCH_ON_MCMOD_KEY按键已按下，searchKeyDown设置为true");
+        } else {
+            SearchOnMcmod.copyNameKeyDown = true;
+            log.info("COPY_ITEM_NAME_KEY按键已按下，copyNameKeyDown设置为true");
+        }
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(100);
+                if (searchKey) {
+                    SearchOnMcmod.searchKeyDown = false;
+                    log.info("SEARCH_ON_MCMOD_KEY按键自动释放，searchKeyDown设置为false");
+                } else {
+                    SearchOnMcmod.copyNameKeyDown = false;
+                    log.info("COPY_ITEM_NAME_KEY按键自动释放，copyNameKeyDown设置为false");
+                }
+            } catch (InterruptedException e) {
+                log.error("Delayed key up interrupted", e);
+            }
+            return null;
+        });
     }
 }

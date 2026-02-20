@@ -1,58 +1,41 @@
 plugins {
-    id 'fabric-loom' version '1.9-SNAPSHOT'
-}
-
-version = project.mod_version
-group = project.mod_group_id
-
-base {
-    archivesName = "searchonmcmod-fabric-${support_version}"
-}
-
-repositories {
-    maven {
-        name = 'ParchmentMC'
-        url = 'https://maven.parchmentmc.org'
-    }
+    id 'multiloader-loader'
+    id 'fabric-loom'
 }
 
 dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
+    }
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    implementation("org.jspecify:jspecify:1.0.0")
+    implementation project(':common')
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.layered() {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:${project.parchment_date}@zip")
+}
+
+loom {
+    if (project(':common').file("src/main/resources/${mod_id}.accesswidener").exists()) {
+        accessWidenerPath.set(project(':common').file("src/main/resources/${mod_id}.accesswidener"))
     }
-    modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-}
-
-tasks.named('processResources', ProcessResources).configure {
-    def replaceProperties = [
-            mod_id                    : mod_id,
-            mod_version               : mod_version,
-            mod_name                  : mod_name,
-            mod_description           : mod_description,
-            mod_authors               : mod_authors,
-            mod_license               : mod_license,
-            minecraft_version         : minecraft_version,
-            github_url                : github_url,
-            forge_loader_version_range: forge_loader_version_range,
-    ]
-    inputs.properties replaceProperties
-
-    filesMatching("fabric.mod.json") {
-        expand replaceProperties + [project: project]
+    mixin {
+        defaultRefmapName.set("${mod_id}.refmap.json")
     }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = 17
-}
-
-tasks.register('printVersion') {
-    doLast {
-        println "${project.mod_version}"
+    runs {
+        client {
+            client()
+            setConfigName('Fabric Client')
+            ideConfigGenerated(true)
+            runDir('run')
+        }
+        server {
+            server()
+            setConfigName('Fabric Server')
+            ideConfigGenerated(true)
+            runDir('run')
+        }
     }
 }

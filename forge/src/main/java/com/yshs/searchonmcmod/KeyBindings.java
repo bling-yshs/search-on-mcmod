@@ -25,4 +25,16 @@ public class KeyBindings {
             KEY_CATEGORY
     );
 
+    /**
+     * 复制鼠标指向物品名称按键
+     */
+    public static final KeyMapping COPY_ITEM_NAME_KEY = new KeyMapping(
+            "key.searchonmcmod.copy_item_name",
+            KeyConflictContext.GUI,
+            KeyModifier.NONE,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_UNKNOWN,
+            KEY_CATEGORY
+    );
+
 }

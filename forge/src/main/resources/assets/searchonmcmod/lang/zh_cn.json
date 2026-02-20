@@ -1,6 +1,7 @@
 {
   "key.categories.searchonmcmod": "Search on MCMOD",
   "key.searchonmcmod.search_on_mcmod": "在 MC百科 中搜索",
+  "key.searchonmcmod.copy_item_name": "复制鼠标指针下方的物品名称",
   "text.searchonmcmod.mcmodid_not_found": "MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况",
   "text.searchonmcmod.searching": "正在打开 MC 百科",
   "text.searchonmcmod.search_failed": "打开 MC 百科失败，请检查网络连接"

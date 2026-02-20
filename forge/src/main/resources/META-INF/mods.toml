@@ -1,11 +1,26 @@
 modLoader = "javafml"
 loaderVersion = "${forge_loader_version_range}"
-license = "${mod_license}"
+license = "${license}"
 
 [[mods]]
 modId = "${mod_id}"
-version = "${mod_version}"
+version = "${version}"
 displayName = "${mod_name}"
-logoFile="icon.png"
-authors = "${mod_authors}"
-description = '''${mod_description}'''
+logoFile = "icon.png"
+credits = "${credits}"
+authors = "${mod_author}"
+description = '''${description}'''
+
+[[dependencies.${mod_id}]]
+modId = "forge"
+mandatory = true
+versionRange = "[${forge_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+mandatory = true
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "BOTH"
