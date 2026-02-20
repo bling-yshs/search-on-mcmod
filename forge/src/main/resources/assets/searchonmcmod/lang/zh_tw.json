@@ -2,7 +2,11 @@
   "key.categories.searchonmcmod": "Search on MCMOD",
   "key.searchonmcmod.search_on_mcmod": "在 MC百科 中搜尋",
   "key.searchonmcmod.copy_item_name": "複製滑鼠指標下方的物品名稱",
+  "config.searchonmcmod.title": "Search on MCMOD 設定",
+  "config.searchonmcmod.show_searching_hint": "成功觸發「打開 MC 百科」後，彈出友好提示",
+  "config.searchonmcmod.show_copy_to_clipboard_hint": "成功觸發「複製物品名稱」後，彈出友好提示",
   "text.searchonmcmod.mcmodid_not_found": "MC百科搜索: 無法透過百科 API 取得物品 MCMOD ID，請檢查您的網路情況",
   "text.searchonmcmod.searching": "正在開啟 MC 百科",
+  "text.searchonmcmod.copy_to_clipboard": "已複製到剪貼簿",
   "text.searchonmcmod.search_failed": "開啟 MC 百科失敗，請檢查網路連線"
 }

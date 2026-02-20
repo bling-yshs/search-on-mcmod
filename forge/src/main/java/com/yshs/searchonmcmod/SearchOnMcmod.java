@@ -7,12 +7,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.CompletableFuture;
@@ -37,7 +40,10 @@ public class SearchOnMcmod {
     /**
      * 构造函数
      */
-    public SearchOnMcmod() {
+    public SearchOnMcmod(FMLJavaModLoadingContext context) {
+        context.registerConfig(ModConfig.Type.CLIENT, SearchOnMcmodConfig.CLIENT_SPEC);
+        context.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new SearchOnMcmodConfigScreen(parent)));
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -188,6 +194,9 @@ public class SearchOnMcmod {
     }
 
     private static void showSearchingHint() {
+        if (!SearchOnMcmodConfig.isSearchingHintEnabled()) {
+            return;
+        }
         showToast(SystemToast.SystemToastIds.PERIODIC_NOTIFICATION, Component.translatable("text.searchonmcmod.searching"));
     }
 
@@ -199,6 +208,14 @@ public class SearchOnMcmod {
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.keyboardHandler.setClipboard(localizedName);
         log.info("已复制鼠标指针下方物品名称到剪贴板: {}", localizedName);
+        showCopyToClipboardHint();
+    }
+
+    private static void showCopyToClipboardHint() {
+        if (!SearchOnMcmodConfig.isCopyToClipboardHintEnabled()) {
+            return;
+        }
+        showToast(SystemToast.SystemToastIds.PERIODIC_NOTIFICATION, Component.translatable("text.searchonmcmod.copy_to_clipboard"));
     }
 
     private static void showSearchFailedHint() {

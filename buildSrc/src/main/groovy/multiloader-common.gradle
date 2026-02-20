@@ -3,8 +3,10 @@ plugins {
     id 'maven-publish'
 }
 
+def archiveSupportVersion = ['fabric', 'forge'].contains(project.name) ? support_version : minecraft_version
+
 base {
-    archivesName = "${mod_id}-${project.name}-${minecraft_version}"
+    archivesName = "${mod_id}-${project.name}-${archiveSupportVersion}"
 }
 
 java {

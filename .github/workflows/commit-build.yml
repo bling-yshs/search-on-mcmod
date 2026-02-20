@@ -25,7 +25,13 @@ jobs:
         id: gradle-build
         run: |
           ./gradlew build --no-daemon
-          echo "version=$(./gradlew -q printVersion --no-daemon)" >> $GITHUB_OUTPUT
+          version="$(./gradlew -q printModVersion --no-daemon)"
+          if [[ -z "${version}" ]]; then
+            echo "::error::无法从 printModVersion 任务读取 version，流程终止。"
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Detected version: ${version}"
 
       - name: 上传构建产物 (Upload artifacts)
         uses: actions/upload-artifact@v4

@@ -10,3 +10,9 @@ subprojects {
         options.encoding = 'UTF-8'
     }
 }
+
+tasks.register('printModVersion') {
+    doLast {
+        println providers.gradleProperty('version').get()
+    }
+}
