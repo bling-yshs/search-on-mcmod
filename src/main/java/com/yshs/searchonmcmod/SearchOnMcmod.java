@@ -1,7 +1,7 @@
 package com.yshs.searchonmcmod;
 
-import lombok.SneakyThrows;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.client.event.GuiScreenEvent;
@@ -10,14 +10,15 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.yshs.searchonmcmod.KeyBindings.COPY_ITEM_NAME_KEY;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
 /**
@@ -30,8 +31,8 @@ public class SearchOnMcmod {
      */
     public static final String MOD_ID = "searchonmcmod";
     private static final Logger log = LogManager.getLogger();
-    private final AtomicBoolean keyPressedFlag = new AtomicBoolean(false);
-    private final AtomicBoolean hasTriggeredSearch = new AtomicBoolean(false);
+    private KeyPressState searchKeyState = KeyPressState.RELEASED;
+    private KeyPressState copyNameKeyState = KeyPressState.RELEASED;
 
     /**
      * 构造函数
@@ -39,25 +40,7 @@ public class SearchOnMcmod {
     public SearchOnMcmod() {
         MinecraftForge.EVENT_BUS.register(this);
         ClientRegistry.registerKeyBinding(SEARCH_ON_MCMOD_KEY);
-    }
-
-    /**
-     * 安全检查键盘按键状态，避免无效键码导致异常
-     *
-     * @param keyCode 键码
-     * @return 是否按下
-     */
-    private boolean isKeyDownSafe(int keyCode) {
-        try {
-            // 检查键码是否有效
-            if (keyCode <= 0 || keyCode >= Keyboard.KEYBOARD_SIZE) {
-                return false;
-            }
-            return Keyboard.isKeyDown(keyCode);
-        } catch (Exception e) {
-            log.error("检查按键状态时出错：{}", e.getMessage());
-            return false;
-        }
+        ClientRegistry.registerKeyBinding(COPY_ITEM_NAME_KEY);
     }
 
     /**
@@ -66,18 +49,31 @@ public class SearchOnMcmod {
      * @param event 物品tooltip事件，渲染物品信息时触发
      */
     @SubscribeEvent
-    @SneakyThrows
     public void onRenderTooltipEvent(ItemTooltipEvent event) {
-        if (!keyPressedFlag.get() || hasTriggeredSearch.get()) {
+        boolean shouldCopyName = copyNameKeyState == KeyPressState.PRESSED_UNCONSUMED;
+        boolean shouldSearch = searchKeyState == KeyPressState.PRESSED_UNCONSUMED;
+        copyNameKeyState = consumePressOnce(copyNameKeyState);
+        searchKeyState = consumePressOnce(searchKeyState);
+
+        if (!shouldCopyName && !shouldSearch) {
             return;
         }
-        hasTriggeredSearch.set(true);
+        String localizedName = event.getItemStack().getDisplayName();
+
+        if (shouldCopyName) {
+            copyHoveredItemName(localizedName);
+        }
+
+        if (!shouldSearch) {
+            return;
+        }
+
         log.info("触发了MC百科搜索");
         // 1. 得到物品的注册表名
         ResourceLocation registryName = event.getItemStack().getItem().getRegistryName();
         if (registryName == null) {
             // 如果注册表名为空，直接搜索物品的本地化名称
-            MainUtil.openSearchPage(event.getItemStack().getDisplayName());
+            MainUtil.openSearchPage(localizedName);
             return;
         }
         String registryNameStr = registryName.toString();
@@ -87,9 +83,7 @@ public class SearchOnMcmod {
         }
         // 4. 得到物品的metadata(如果有的话)
         int metadata = event.getItemStack().getMetadata();
-        // 5. 得到物品的本地化名称
-        String localizedName = event.getItemStack().getDisplayName();
-        // 6. 异步获取物品的MCMODID
+        // 5. 异步获取物品的MCMODID
         CompletableFuture.runAsync(() -> {
             Optional<String> optionalItemMCMODID;
             try {
@@ -97,8 +91,10 @@ public class SearchOnMcmod {
             } catch (Exception e) {
                 log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
                 // 发送提示消息
-                Minecraft.getMinecraft().player
-                        .sendMessage(new TextComponentTranslation("text.searchonmcmod.mcmodid_not_found"));
+                if (Minecraft.getMinecraft().player != null) {
+                    Minecraft.getMinecraft().player
+                            .sendMessage(new TextComponentTranslation("text.searchonmcmod.mcmodid_not_found"));
+                }
                 return;
             }
             if (!optionalItemMCMODID.isPresent()) {
@@ -126,32 +122,60 @@ public class SearchOnMcmod {
         });
     }
 
-    /**
-     * 在按键按下事件时触发
-     *
-     * @param event 按键按下事件，监听是否按下搜索按键
-     */
+    // 键位状态机依赖按键事件的下压/释放状态来保证一次按压只触发一次动作。
     @SubscribeEvent
-    public void onKeyPressed(GuiScreenEvent.KeyboardInputEvent.Pre event) {
-        if (this.isKeyDownSafe(SEARCH_ON_MCMOD_KEY.getKeyCode()) && !keyPressedFlag.get()) {
-            keyPressedFlag.set(true);
-            hasTriggeredSearch.set(false);
-            log.info("按键已按下，keyPressedFlag设置为true");
+    public void onKeyboardInput(GuiScreenEvent.KeyboardInputEvent.Pre event) {
+        int eventKey = Keyboard.getEventKey();
+        if (eventKey == Keyboard.KEY_NONE) {
+            return;
         }
+
+        if (Keyboard.getEventKeyState()) {
+            searchKeyState = markPressed(eventKey, SEARCH_ON_MCMOD_KEY, searchKeyState);
+            copyNameKeyState = markPressed(eventKey, COPY_ITEM_NAME_KEY, copyNameKeyState);
+            return;
+        }
+
+        searchKeyState = markReleased(eventKey, SEARCH_ON_MCMOD_KEY, searchKeyState);
+        copyNameKeyState = markReleased(eventKey, COPY_ITEM_NAME_KEY, copyNameKeyState);
     }
 
-    /**
-     * 在按键释放事件时触发
-     *
-     * @param event 按键释放事件，监听是否释放搜索按键
-     */
-    @SubscribeEvent
-    public void onKeyReleased(GuiScreenEvent.KeyboardInputEvent.Post event) {
-        if (!this.isKeyDownSafe(SEARCH_ON_MCMOD_KEY.getKeyCode()) && keyPressedFlag.get()) {
-            keyPressedFlag.set(false);
-            hasTriggeredSearch.set(false);
-            log.info("按键已释放，keyPressedFlag设置为false");
+    private static KeyPressState markPressed(int eventKey, net.minecraft.client.settings.KeyBinding keyBinding, KeyPressState state) {
+        if (!keyBinding.isActiveAndMatches(eventKey)) {
+            return state;
         }
+        if (state == KeyPressState.RELEASED) {
+            return KeyPressState.PRESSED_UNCONSUMED;
+        }
+        return state;
     }
 
+    private static KeyPressState markReleased(int eventKey, net.minecraft.client.settings.KeyBinding keyBinding, KeyPressState state) {
+        if (eventKey != keyBinding.getKeyCode()) {
+            return state;
+        }
+        return KeyPressState.RELEASED;
+    }
+
+    private static KeyPressState consumePressOnce(KeyPressState state) {
+        if (state == KeyPressState.PRESSED_UNCONSUMED) {
+            return KeyPressState.PRESSED_CONSUMED;
+        }
+        return state;
+    }
+
+    private static void copyHoveredItemName(String localizedName) {
+        if (StringUtils.isBlank(localizedName)) {
+            log.warn("复制鼠标指针下方物品名称失败：名称为空");
+            return;
+        }
+        GuiScreen.setClipboardString(localizedName);
+        log.info("已复制鼠标指针下方物品名称到剪贴板: {}", localizedName);
+    }
+
+    private enum KeyPressState {
+        RELEASED,
+        PRESSED_UNCONSUMED,
+        PRESSED_CONSUMED
+    }
 }
