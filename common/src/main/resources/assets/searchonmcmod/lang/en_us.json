@@ -1,5 +1,12 @@
 {
-  "key.categories.searchonmcmod": "Search on MCMOD",
+  "key.category.searchonmcmod.categories": "Search on MCMOD",
   "key.searchonmcmod.search_on_mcmod": "Search on MCMOD",
-  "text.searchonmcmod.mcmodid_not_found": "Search on MCMOD: Unable to retrieve item MCMOD ID through the MCMOD API, please check your network connection"
+  "key.searchonmcmod.copy_item_name": "Copy item name under cursor",
+  "config.searchonmcmod.title": "Search on MCMOD Config",
+  "config.searchonmcmod.show_searching_hint": "Show 'Opening MCMOD' hint",
+  "config.searchonmcmod.show_copy_to_clipboard_hint": "Show 'Copied to clipboard' hint",
+  "text.searchonmcmod.mcmodid_not_found": "Search on MCMOD: Unable to retrieve item MCMOD ID through the MCMOD API, please check your network connection",
+  "text.searchonmcmod.searching": "Opening MCMOD",
+  "text.searchonmcmod.copy_to_clipboard": "Copied to clipboard",
+  "text.searchonmcmod.search_failed": "Failed to open MCMOD, please check your network connection"
 }
