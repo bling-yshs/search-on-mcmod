@@ -45,7 +45,7 @@ version = propertyString('mod_version')
 group = propertyString('root_package')
 
 base {
-    archivesName.set(propertyString('mod_id'))
+    archivesName.set("searchonmcmod-forge-1.12.2")
 }
 
 tasks.decompressDecompiledSources.enabled !propertyBool('change_minecraft_sources')
@@ -78,7 +78,7 @@ minecraft {
     useDependencyAccessTransformers.set(propertyBool('use_dependency_at_files'))
 
     username.set(propertyString('minecraft_username'))
-    
+
     // Add any additional tweaker classes here
     extraTweakClasses.addAll(propertyStringList('extra_tweak_classes'))
 
@@ -194,7 +194,7 @@ processResources {
                 'mixin_package': propertyString('mixin_package')
         )
     }
-    
+
     if (propertyBool('use_access_transformer')) {
         rename '(.+_at.cfg)', 'META-INF/$1'
     }
@@ -349,7 +349,7 @@ tasks.register('prioritizeCoremods') {
     }
 }
 
-tasks.register('printVersion') {
+tasks.register('printModVersion') {
     doLast {
         println propertyString('mod_version')
     }
