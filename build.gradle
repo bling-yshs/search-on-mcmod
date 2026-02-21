@@ -4,8 +4,13 @@ plugins {
     // see https://projects.neoforged.net/neoforged/moddevgradle for new versions
     id 'net.neoforged.moddev' version '2.0.75' apply false
 }
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = "UTF-8"
+subprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+    tasks.withType(Javadoc).configureEach {
+        options.encoding = 'UTF-8'
+    }
 }
 
 tasks.register('printVersion') {
