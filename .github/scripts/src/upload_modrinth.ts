@@ -24,8 +24,9 @@ function parseFilename(filename: string): MatrixItem | null {
   const parts = filename.replace('.jar', '').split('-')
   if (parts.length >= 4 && parts[0] === 'searchonmcmod') {
     const loader = parts[1].toLowerCase()
-    const mc_version = parts[2]
-    const mod_version = parts[3]
+    // mod 版本固定在最后一段（格式 x.x.x），mc_version 是中间所有段拼接
+    const mod_version = parts[parts.length - 1]
+    const mc_version = parts.slice(2, parts.length - 1).join('-')
 
     // 将loader转换为首字母大写形式，使显示更美观
     let displayLoader = loader.charAt(0).toUpperCase() + loader.slice(1)
