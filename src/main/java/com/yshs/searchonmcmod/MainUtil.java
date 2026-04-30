@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
@@ -32,6 +33,10 @@ public class MainUtil {
      * 获取物品 ID URL
      */
     private static final String FETCH_ITEM_ID_URL = "https://api.mcmod.cn/getItem/?regname=%s&metadata=%d";
+    /**
+     * 浏览器 User-Agent
+     */
+    private static final String BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
     /**
      * 打开搜索页面
@@ -71,6 +76,7 @@ public class MainUtil {
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
+        applyBrowserUserAgent(connection);
         // 设置连接超时为5秒
         connection.setConnectTimeout(5000);
         // 设置读取超时为5秒
@@ -83,7 +89,10 @@ public class MainUtil {
                 return Optional.empty();
             }
             @Cleanup BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String mcmodItemID = in.readLine();
+            String mcmodItemID = Optional.ofNullable(in.readLine()).orElse("").trim();
+            if (!mcmodItemID.matches("\\d+")) {
+                throw new IOException("MC百科 API 返回非法物品 ID: " + mcmodItemID);
+            }
             log.info("获取物品 MCMOD ID 成功: {}", mcmodItemID);
             return Optional.of(mcmodItemID);
         } finally {
@@ -101,6 +110,8 @@ public class MainUtil {
         log.info("检查MC百科物品页面是否存在: {}", urlStr);
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        applyBrowserUserAgent(connection);
         // 设置连接超时为5秒
         connection.setConnectTimeout(5000);
         // 设置读取超时为5秒
@@ -110,6 +121,15 @@ public class MainUtil {
         } finally {
             connection.disconnect();
         }
+    }
+
+    /**
+     * 应用浏览器 User-Agent
+     *
+     * @param connection HTTP 连接
+     */
+    private static void applyBrowserUserAgent(@NonNull HttpURLConnection connection) {
+        connection.setRequestProperty("User-Agent", BROWSER_USER_AGENT);
     }
 
     /**
