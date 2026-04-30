@@ -33,6 +33,11 @@ public class MainUtil {
     private static final String FETCH_ITEM_ID_URL = "https://api.mcmod.cn/getItem/?regname=%s";
 
     /**
+     * 浏览器风格 User-Agent
+     */
+    private static final String BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+    /**
      * 打开搜索页面
      *
      * @param name 物品名称
@@ -55,6 +60,7 @@ public class MainUtil {
         log.info("检查MC百科物品页面是否存在: {}", urlStr);
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        configureMcmodRequest(connection);
         // 设置连接超时为5秒
         connection.setConnectTimeout(5000);
         // 设置读取超时为5秒
@@ -98,6 +104,7 @@ public class MainUtil {
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
+        configureMcmodRequest(connection);
         // 设置连接超时为5秒
         connection.setConnectTimeout(5000);
         // 设置读取超时为5秒
@@ -110,8 +117,14 @@ public class MainUtil {
             }
             @Cleanup BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String mcmodItemID = in.readLine();
-            if (mcmodItemID == null) {
+            if (mcmodItemID != null) {
+                mcmodItemID = mcmodItemID.trim();
+            }
+            if (mcmodItemID == null || mcmodItemID.isEmpty()) {
                 throw new IOException("通过百科 API 获取物品 ID 失败，返回内容为空");
+            }
+            if (!mcmodItemID.matches("\\d+")) {
+                throw new IOException("通过百科 API 获取物品 ID 失败，返回内容不是数字: " + mcmodItemID);
             }
             log.info("获取物品 MCMOD ID 成功: {}", mcmodItemID);
             return mcmodItemID;
@@ -137,5 +150,14 @@ public class MainUtil {
             // 如果格式不符合预期，返回空字符串
             return "";
         }
+    }
+
+    /**
+     * 配置 MC 百科请求头
+     *
+     * @param connection HTTP 连接
+     */
+    private static void configureMcmodRequest(@NonNull HttpURLConnection connection) {
+        connection.setRequestProperty("User-Agent", BROWSER_USER_AGENT);
     }
 }
