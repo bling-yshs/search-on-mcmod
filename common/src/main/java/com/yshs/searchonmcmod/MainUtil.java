@@ -33,6 +33,16 @@ public class MainUtil {
     private static final String FETCH_ITEM_ID_URL = "https://api.mcmod.cn/getItem/?regname=%s";
 
     /**
+     * User-Agent 请求头名称
+     */
+    private static final String USER_AGENT_HEADER = "User-Agent";
+
+    /**
+     * 浏览器风格 User-Agent
+     */
+    private static final String BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+    /**
      * 打开搜索页面
      *
      * @param name 物品名称
@@ -55,6 +65,7 @@ public class MainUtil {
         log.info("检查MC百科物品页面是否存在: {}", urlStr);
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        setBrowserUserAgent(connection);
         // 设置连接超时为5秒
         connection.setConnectTimeout(5000);
         // 设置读取超时为5秒
@@ -98,6 +109,7 @@ public class MainUtil {
         URL url = new URL(urlStr);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
+        setBrowserUserAgent(connection);
         // 设置连接超时为5秒
         connection.setConnectTimeout(5000);
         // 设置读取超时为5秒
@@ -112,6 +124,10 @@ public class MainUtil {
             String mcmodItemID = in.readLine();
             if (mcmodItemID == null) {
                 throw new IOException("通过百科 API 获取物品 ID 失败，返回内容为空");
+            }
+            mcmodItemID = mcmodItemID.trim();
+            if (!isValidMcmodItemID(mcmodItemID)) {
+                throw new IOException("通过百科 API 获取物品 ID 失败，返回内容不是有效数字 ID: " + mcmodItemID);
             }
             log.info("获取物品 MCMOD ID 成功: {}", mcmodItemID);
             return mcmodItemID;
@@ -137,5 +153,24 @@ public class MainUtil {
             // 如果格式不符合预期，返回空字符串
             return "";
         }
+    }
+
+    /**
+     * 设置浏览器风格 User-Agent。
+     *
+     * @param connection HTTP 连接
+     */
+    private static void setBrowserUserAgent(@NonNull HttpURLConnection connection) {
+        connection.setRequestProperty(USER_AGENT_HEADER, BROWSER_USER_AGENT);
+    }
+
+    /**
+     * 判断 MC百科物品 ID 是否有效。
+     *
+     * @param mcmodItemID MC百科物品 ID
+     * @return 是否为有效数字 ID
+     */
+    private static boolean isValidMcmodItemID(@NonNull String mcmodItemID) {
+        return mcmodItemID.matches("\\d+");
     }
 }
