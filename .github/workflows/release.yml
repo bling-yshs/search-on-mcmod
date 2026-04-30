@@ -75,12 +75,13 @@ jobs:
         working-directory: .github/scripts
         run: npm install --omit=dev
 
-      - name: 下载 Release 里的文件 (Download files from Release)
-        uses: robinraju/release-downloader@v1
-        with:
-          tag: "v${{ github.event.inputs.version }}"
-          out-file-path: release_assets
-          fileName: '*.jar'
+      - name: 获取 Release 文件名 (Get Release asset names)
+        id: get-release-assets
+        run: |
+          asset_names=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ github.event.inputs.version }}" | jq -r '.assets[].name')
+          echo "asset_names<<EOF" >> $GITHUB_OUTPUT
+          echo "$asset_names" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 获取选中的版本 (Get selected versions)
         id: get-selected-versions
@@ -103,6 +104,7 @@ jobs:
         working-directory: .github/scripts
         env:
           GITHUB_SELECTED_VERSIONS: ${{ steps.get-selected-versions.outputs.versions }}
+          GITHUB_RELEASE_ASSETS: ${{ steps.get-release-assets.outputs.asset_names }}
         run: |
           output=$(npx tsx src/upload_modrinth.ts)
           echo "matrix=$output" >> $GITHUB_OUTPUT
@@ -129,7 +131,7 @@ jobs:
         with:
           tag: "v${{ github.event.inputs.version }}"
           out-file-path: release_assets
-          fileName: '*.jar'
+          fileName: ${{ matrix.file }}
 
       - name: 获取 Release 正文 (Get Release Body)
         id: get-release-body
@@ -153,4 +155,3 @@ jobs:
           featured: true
           project_id: cPF7RWdR
         continue-on-error: true
-

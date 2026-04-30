@@ -56,7 +56,11 @@ function main() {
   const releaseAssetsPath = '../../release_assets'
 
   try {
-    const files = readdirSync(releaseAssetsPath)
+    const releaseAssets = (process.env.GITHUB_RELEASE_ASSETS || '')
+      .split('\n')
+      .map(file => file.trim())
+      .filter(Boolean)
+    const files = releaseAssets.length > 0 ? releaseAssets : readdirSync(releaseAssetsPath)
     for (const file of files) {
       if (file.endsWith('.jar')) {
         const meta = parseFilename(file)
