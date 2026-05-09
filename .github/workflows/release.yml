@@ -66,14 +66,10 @@ jobs:
             exit 1
           fi
 
-      - name: 安装 Node.js (Set up Node.js)
-        uses: actions/setup-node@v6
+      - name: 安装 Bun (Set up Bun)
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '24'
-
-      - name: 安装脚本依赖 (Install script dependencies)
-        working-directory: .github/scripts
-        run: npm install --omit=dev
+          bun-version: latest
 
       - name: 获取 Release 文件名 (Get Release asset names)
         id: get-release-assets
@@ -106,7 +102,7 @@ jobs:
           GITHUB_SELECTED_VERSIONS: ${{ steps.get-selected-versions.outputs.versions }}
           GITHUB_RELEASE_ASSETS: ${{ steps.get-release-assets.outputs.asset_names }}
         run: |
-          output=$(npx tsx src/upload_modrinth.ts)
+          output=$(bun src/upload_modrinth.ts)
           echo "matrix=$output" >> $GITHUB_OUTPUT
 
       - name: 检查矩阵是否为空 (Check if matrix is empty)

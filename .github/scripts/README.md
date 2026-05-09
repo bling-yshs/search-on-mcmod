@@ -5,7 +5,7 @@
 ## 安装依赖
 
 ```bash
-pnpm install
+bun install --no-lockfile
 ```
 
 ## 使用说明
@@ -13,13 +13,13 @@ pnpm install
 ### 运行 ESLint 检查并自动修复
 
 ```bash
-pnpm lint
+bun run lint
 ```
 
 ### 运行 TypeScript 类型检查
 
 ```bash
-pnpm type-check
+bun run type-check
 ```
 
 ## ESLint 配置说明
