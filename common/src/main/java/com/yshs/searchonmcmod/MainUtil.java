@@ -5,6 +5,12 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.Util;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
 
 /**
  * 通用工具类
@@ -153,11 +160,46 @@ public class MainUtil {
     }
 
     /**
-     * 配置 MC 百科请求头
+     * 配置 MC 百科请求头，并跳过 SSL 证书验证
      *
      * @param connection HTTP 连接
      */
     private static void configureMcmodRequest(@NonNull HttpURLConnection connection) {
         connection.setRequestProperty("User-Agent", BROWSER_USER_AGENT);
+        // 跳过 SSL 证书验证
+        if (connection instanceof HttpsURLConnection) {
+            try {
+                HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, new TrustManager[]{TRUST_ALL_MANAGER}, null);
+                httpsConnection.setSSLSocketFactory(sslContext.getSocketFactory());
+                httpsConnection.setHostnameVerifier(TRUST_ALL_HOSTNAME);
+            } catch (Exception e) {
+                log.warn("配置 SSL 跳过失败", e);
+            }
+        }
     }
+
+    /**
+     * 信任所有证书的 TrustManager
+     */
+    private static final X509TrustManager TRUST_ALL_MANAGER = new X509TrustManager() {
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
+        }
+    };
+
+    /**
+     * 信任所有主机名的 HostnameVerifier
+     */
+    private static final HostnameVerifier TRUST_ALL_HOSTNAME = (String hostname, SSLSession session) -> true;
 }
