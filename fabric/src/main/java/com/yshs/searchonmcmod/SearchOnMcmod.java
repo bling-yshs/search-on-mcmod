@@ -12,7 +12,6 @@ import net.minecraft.world.item.TooltipFlag;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.COPY_ITEM_NAME_KEY;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
@@ -59,59 +58,19 @@ public class SearchOnMcmod implements ModInitializer {
             return;
         }
         searchKeyDown = false;
-        // 1. 得到物品的描述ID
-        String descriptionId = itemStack.getItem().getDescriptionId();
-        if (StringUtils.isBlank(descriptionId)) {
+        if (itemStack.isEmpty()) {
             return;
         }
-        // 2. 转换为注册表名
-        String registryName = MainUtil.convertDescriptionIdToRegistryName(descriptionId);
-        // 3. 如果注册表名为空气，则不进行搜索
-        if ("minecraft:air".equals(registryName)) {
-            return;
-        }
-        // 4. 如果注册表明为空，但是物品的描述ID不为空，则进行搜索
-        if (StringUtils.isBlank(registryName) && StringUtils.isNotBlank(descriptionId)) {
-            try {
-                MainUtil.openSearchPage(descriptionId);
-            } catch (Exception e) {
-                handleSearchFailure("MC百科搜索: 打开搜索页面失败", e);
-            }
-            return;
-        }
-
         // 得到物品的本地化名称
-        String localizedName = itemStack.getHoverName().getString();
-
-        CompletableFuture.runAsync(() -> {
-            // 5. 查找并得到物品在MCMOD中的ID
-            String itemMCMODID;
-            try {
-                itemMCMODID = MainUtil.fetchItemMCMODID(registryName);
-            } catch (Exception e) {
-                handleSearchFailure("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID", e);
-                return;
-            }
-
-            try {
-                // 6. 如果mcmodItemID为0，则进行搜索
-                if ("0".equals(itemMCMODID)) {
-                    MainUtil.openSearchPage(localizedName);
-                    return;
-                }
-
-                // 7. 判断物品页面是否存在，如果不存在则进行搜索
-                if (!MainUtil.itemPageExist(itemMCMODID)) {
-                    MainUtil.openSearchPage(localizedName);
-                    return;
-                }
-
-                // 8. 打开MCMOD的物品页面
-                MainUtil.openItemPage(itemMCMODID);
-            } catch (Exception e) {
-                handleSearchFailure("MC百科搜索: 打开MC百科页面失败", e);
-            }
-        });
+        String searchKeyword = itemStack.getHoverName().getString();
+        if (StringUtils.isBlank(searchKeyword)) {
+            return;
+        }
+        try {
+            MainUtil.openSearchPage(searchKeyword);
+        } catch (Exception e) {
+            handleSearchFailure("MC百科搜索: 打开搜索页面失败", e);
+        }
     }
 
     private static void handleSearchFailure(String message, Exception e) {
