@@ -1,10 +1,7 @@
 package com.yshs.searchonmcmod;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -15,8 +12,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
@@ -47,7 +42,6 @@ public class SearchOnMcmod {
      * @param event 物品tooltip事件，渲染物品信息时触发
      */
     @SubscribeEvent
-    @SneakyThrows
     public void onRenderTooltipEvent(ItemTooltipEvent event) {
         // 检查是否按下快捷键且还未触发过搜索
         if (!keyPressedFlag.get() || hasTriggeredSearch.get()) {
@@ -57,63 +51,22 @@ public class SearchOnMcmod {
         hasTriggeredSearch.set(true);
         log.info("触发了MC百科搜索");
 
+        // 得到物品的本地化名称
+        String localizedName = event.getItemStack().getHoverName().getString();
         // 1. 得到物品的描述ID
         String descriptionId = event.getItemStack().getItem().getDescriptionId();
-        if (StringUtils.isBlank(descriptionId)) {
-            return;
-        }
         // 2. 转换为注册表名
-        String registryName = MainUtil.convertDescriptionIdToRegistryName(descriptionId);
+        String registryName = StringUtils.isBlank(descriptionId) ? "" : MainUtil.convertDescriptionIdToRegistryName(descriptionId);
         // 3. 如果注册表名为空气，则不进行搜索
         if ("minecraft:air".equals(registryName)) {
             return;
         }
-        // 4. 如果注册表明为空，但是物品的描述ID不为空，则进行搜索
-        if (StringUtils.isBlank(registryName) && StringUtils.isNotBlank(descriptionId)) {
-            MainUtil.openSearchPage(descriptionId);
+        // 4. 优先使用本地化名称搜索，名称为空时使用描述 ID 兜底
+        String searchKeyword = StringUtils.isNotBlank(localizedName) ? localizedName : descriptionId;
+        if (StringUtils.isBlank(searchKeyword)) {
             return;
         }
-
-        // 得到物品的本地化名称
-        String localizedName = event.getItemStack().getHoverName().getString();
-
-        CompletableFuture.runAsync(() -> {
-            // 5. 查找并得到物品在MCMOD中的ID
-            Optional<String> optionalItemMCMODID;
-            try {
-                optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryName);
-            } catch (Exception e) {
-                log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
-                // 发送提示消息
-                if (Minecraft.getInstance().player != null) {
-                    Minecraft.getInstance().player.sendMessage(
-                            new TranslatableComponent("text.searchonmcmod.mcmodid_not_found"),
-                            Minecraft.getInstance().player.getUUID());
-                }
-                return;
-            }
-            if (!optionalItemMCMODID.isPresent()) {
-                return;
-            }
-            String itemMCMODID = optionalItemMCMODID.get();
-
-            // 6. 如果mcmodItemID为0，则进行搜索
-            if ("0".equals(itemMCMODID)) {
-                // 然后到https://search.mcmod.cn/s?key=%s去搜索
-                MainUtil.openSearchPage(localizedName);
-                return;
-            }
-
-            // 7. 判断物品页面是否存在，如果不存在则进行搜索
-            if (!MainUtil.itemPageExist(itemMCMODID)) {
-                // 然后到https://search.mcmod.cn/s?key=%s去搜索
-                MainUtil.openSearchPage(localizedName);
-                return;
-            }
-
-            // 8. 打开MCMOD的物品页面
-            MainUtil.openItemPage(itemMCMODID);
-        });
+        MainUtil.openSearchPage(searchKeyword);
     }
 
     /**
