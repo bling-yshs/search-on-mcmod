@@ -1,19 +1,12 @@
 package com.yshs.searchonmcmod;
 
-import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Optional;
 
 /**
  * 通用工具类
@@ -24,19 +17,6 @@ public class MainUtil {
      * 搜索页面 URL
      */
     private static final String SEARCH_PAGE_URL = "https://search.mcmod.cn/s?key=%s";
-    /**
-     * 物品页面 URL
-     */
-    private static final String ITEM_PAGE_URL = "https://www.mcmod.cn/item/%s.html";
-
-    /**
-     * 获取物品 ID URL
-     */
-    private static final String FETCH_ITEM_ID_URL = "https://api.mcmod.cn/getItem/?regname=%s&metadata=%d";
-    /**
-     * 浏览器 User-Agent
-     */
-    private static final String BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
     /**
      * 打开搜索页面
@@ -49,87 +29,6 @@ public class MainUtil {
         String url = String.format(SEARCH_PAGE_URL, encode);
         log.info("打开MC百科搜索页面: {}", url);
         MainUtil.browse(url);
-    }
-
-    /**
-     * 打开物品页面
-     *
-     * @param id 物品 ID
-     */
-    public static void openItemPage(@NonNull String id) {
-        String url = String.format(ITEM_PAGE_URL, id);
-        log.info("打开MC百科物品页面: {}", url);
-        MainUtil.browse(url);
-    }
-
-    /**
-     * 通过百科 API 获取物品 MCMOD ID
-     *
-     * @param registryName 物品注册名
-     * @param metadata     物品元数据
-     * @return 物品的 MCMOD ID
-     */
-    @SneakyThrows
-    public static Optional<String> fetchItemMCMODID(@NonNull String registryName, int metadata) {
-        String urlStr = String.format(FETCH_ITEM_ID_URL, registryName, metadata);
-        log.info("通过百科API获取物品 ID: {}", urlStr);
-        URL url = new URL(urlStr);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        applyBrowserUserAgent(connection);
-        // 设置连接超时为5秒
-        connection.setConnectTimeout(5000);
-        // 设置读取超时为5秒
-        connection.setReadTimeout(5000);
-
-        try {
-            int responseCode = connection.getResponseCode();
-            if (responseCode != 200) {
-                log.error("获取物品 ID 失败: {}", responseCode);
-                return Optional.empty();
-            }
-            @Cleanup BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String mcmodItemID = Optional.ofNullable(in.readLine()).orElse("").trim();
-            if (!mcmodItemID.matches("\\d+")) {
-                throw new IOException("MC百科 API 返回非法物品 ID: " + mcmodItemID);
-            }
-            log.info("获取物品 MCMOD ID 成功: {}", mcmodItemID);
-            return Optional.of(mcmodItemID);
-        } finally {
-            connection.disconnect();
-        }
-    }
-
-    /**
-     * @param id 物品 ID
-     * @return 物品页面是否存在 true: 存在 false: 不存在
-     */
-    @SneakyThrows
-    public static boolean itemPageExist(@NonNull String id) {
-        String urlStr = String.format(ITEM_PAGE_URL, id);
-        log.info("检查MC百科物品页面是否存在: {}", urlStr);
-        URL url = new URL(urlStr);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        applyBrowserUserAgent(connection);
-        // 设置连接超时为5秒
-        connection.setConnectTimeout(5000);
-        // 设置读取超时为5秒
-        connection.setReadTimeout(5000);
-        try {
-            return connection.getResponseCode() == 200;
-        } finally {
-            connection.disconnect();
-        }
-    }
-
-    /**
-     * 应用浏览器 User-Agent
-     *
-     * @param connection HTTP 连接
-     */
-    private static void applyBrowserUserAgent(@NonNull HttpURLConnection connection) {
-        connection.setRequestProperty("User-Agent", BROWSER_USER_AGENT);
     }
 
     /**

@@ -1,9 +1,6 @@
 package com.yshs.searchonmcmod;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -14,9 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
-
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.COPY_ITEM_NAME_KEY;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
@@ -69,57 +63,19 @@ public class SearchOnMcmod {
         }
 
         log.info("触发了MC百科搜索");
-        // 1. 得到物品的注册表名
-        ResourceLocation registryName = event.getItemStack().getItem().getRegistryName();
-        if (registryName == null) {
-            // 如果注册表名为空，直接搜索物品的本地化名称
+        if (event.getItemStack().isEmpty()) {
+            return;
+        }
+
+        // 得到物品的本地化名称
+        if (StringUtils.isBlank(localizedName)) {
+            return;
+        }
+        try {
             MainUtil.openSearchPage(localizedName);
-            return;
+        } catch (Exception e) {
+            log.error("MC百科搜索: 打开搜索页面失败", e);
         }
-        String registryNameStr = registryName.toString();
-        // 3. 如果注册表名为空气，则不进行搜索
-        if ("minecraft:air".equals(registryNameStr)) {
-            return;
-        }
-        // 4. 得到物品的metadata(如果有的话)
-        int metadata = event.getItemStack().getMetadata();
-        // 5. 异步获取物品的MCMODID
-        CompletableFuture.runAsync(() -> {
-            Optional<String> optionalItemMCMODID;
-            try {
-                optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryNameStr, metadata);
-            } catch (Exception e) {
-                log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
-                // 发送提示消息
-                if (Minecraft.getMinecraft().player != null) {
-                    Minecraft.getMinecraft().player
-                            .sendMessage(new TextComponentTranslation("text.searchonmcmod.mcmodid_not_found"));
-                }
-                return;
-            }
-            if (!optionalItemMCMODID.isPresent()) {
-                return;
-            }
-            String itemMCMODID = optionalItemMCMODID.get();
-
-            // 6. 如果mcmodItemID为0，则进行搜索
-            if ("0".equals(itemMCMODID)) {
-                // 到https://search.mcmod.cn/s?key=%s去搜索
-                MainUtil.openSearchPage(localizedName);
-                return;
-            }
-
-            // 7. 判断物品页面是否存在，如果不存在则进行搜索
-            if (!MainUtil.itemPageExist(itemMCMODID)) {
-                // 到https://search.mcmod.cn/s?key=%s去搜索
-                MainUtil.openSearchPage(localizedName);
-                return;
-            }
-
-            // 8. 打开MCMOD的物品页面
-            MainUtil.openItemPage(itemMCMODID);
-
-        });
     }
 
     // 键位状态机依赖按键事件的下压/释放状态来保证一次按压只触发一次动作。
