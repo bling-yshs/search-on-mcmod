@@ -50,23 +50,34 @@ public class SearchOnMcmod {
         // 设置已触发标志，保证一次按键只触发一次
         hasTriggeredSearch.set(true);
         log.info("触发了MC百科搜索");
-
-        // 得到物品的本地化名称
-        String localizedName = event.getItemStack().getHoverName().getString();
-        // 1. 得到物品的描述ID
-        String descriptionId = event.getItemStack().getItem().getDescriptionId();
-        // 2. 转换为注册表名
-        String registryName = StringUtils.isBlank(descriptionId) ? "" : MainUtil.convertDescriptionIdToRegistryName(descriptionId);
-        // 3. 如果注册表名为空气，则不进行搜索
-        if ("minecraft:air".equals(registryName)) {
+        if (event.getItemStack().isEmpty()) {
             return;
         }
-        // 4. 优先使用本地化名称搜索，名称为空时使用描述 ID 兜底
-        String searchKeyword = StringUtils.isNotBlank(localizedName) ? localizedName : descriptionId;
+        // 得到物品的本地化名称
+        String searchKeyword = event.getItemStack().getHoverName().getString();
         if (StringUtils.isBlank(searchKeyword)) {
             return;
         }
-        MainUtil.openSearchPage(searchKeyword);
+        try {
+            MainUtil.openSearchPage(searchKeyword);
+        } catch (Exception e) {
+            handleSearchFailure("MC百科搜索: 打开搜索页面失败", e);
+        }
+    }
+
+    private static void handleSearchFailure(String message, Exception e) {
+        log.error(message, e);
+        showSearchFailedHint();
+    }
+
+    private static void showSearchFailedHint() {
+        net.minecraft.client.Minecraft minecraft = net.minecraft.client.Minecraft.getInstance();
+        minecraft.execute(() -> net.minecraft.client.gui.components.toasts.SystemToast.addOrUpdate(
+                minecraft.getToasts(),
+                net.minecraft.client.gui.components.toasts.SystemToast.SystemToastIds.WORLD_ACCESS_FAILURE,
+                new net.minecraft.network.chat.TranslatableComponent("text.searchonmcmod.search_failed"),
+                null
+        ));
     }
 
     /**

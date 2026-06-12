@@ -43,22 +43,19 @@ public class SearchOnMcmod implements ModInitializer {
             return;
         }
         keyDown = false;
-        // 得到物品的本地化名称
-        String localizedName = itemStack.getHoverName().getString();
-        // 1. 得到物品的描述ID
-        String descriptionId = itemStack.getItem().getDescriptionId();
-        // 2. 转换为注册表名
-        String registryName = StringUtils.isBlank(descriptionId) ? "" : MainUtil.convertDescriptionIdToRegistryName(descriptionId);
-        // 3. 如果注册表名为空气，则不进行搜索
-        if ("minecraft:air".equals(registryName)) {
+        if (itemStack.isEmpty()) {
             return;
         }
-        // 4. 优先使用本地化名称搜索，名称为空时使用描述 ID 兜底
-        String searchKeyword = StringUtils.isNotBlank(localizedName) ? localizedName : descriptionId;
+        // 得到物品的本地化名称
+        String searchKeyword = itemStack.getHoverName().getString();
         if (StringUtils.isBlank(searchKeyword)) {
             return;
         }
-        MainUtil.openSearchPage(searchKeyword);
+        try {
+            MainUtil.openSearchPage(searchKeyword);
+        } catch (Exception e) {
+            log.error("MC百科搜索: 打开搜索页面失败", e);
+        }
     }
 
 }
