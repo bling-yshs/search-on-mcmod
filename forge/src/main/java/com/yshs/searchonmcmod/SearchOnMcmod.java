@@ -56,63 +56,34 @@ public class SearchOnMcmod {
         // 设置已触发标志，保证一次按键只触发一次
         hasTriggeredSearch.set(true);
         log.info("触发了MC百科搜索");
-
-        // 1. 得到物品的描述ID
-        String descriptionId = event.getItemStack().getItem().getDescriptionId();
-        if (StringUtils.isBlank(descriptionId)) {
+        if (event.getItemStack().isEmpty()) {
             return;
         }
-        // 2. 转换为注册表名
-        String registryName = MainUtil.convertDescriptionIdToRegistryName(descriptionId);
-        // 3. 如果注册表名为空气，则不进行搜索
-        if ("minecraft:air".equals(registryName)) {
-            return;
-        }
-        // 4. 如果注册表明为空，但是物品的描述ID不为空，则进行搜索
-        if (StringUtils.isBlank(registryName) && StringUtils.isNotBlank(descriptionId)) {
-            MainUtil.openSearchPage(descriptionId);
-            return;
-        }
-
         // 得到物品的本地化名称
-        String localizedName = event.getItemStack().getHoverName().getString();
+        String searchKeyword = event.getItemStack().getHoverName().getString();
+        if (StringUtils.isBlank(searchKeyword)) {
+            return;
+        }
+        try {
+            MainUtil.openSearchPage(searchKeyword);
+        } catch (Exception e) {
+            handleSearchFailure("MC百科搜索: 打开搜索页面失败", e);
+        }
+    }
 
-        CompletableFuture.runAsync(() -> {
-            // 5. 查找并得到物品在MCMOD中的ID
-            Optional<String> optionalItemMCMODID;
-            try {
-                optionalItemMCMODID = MainUtil.fetchItemMCMODID(registryName);
-            } catch (Exception e) {
-                log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
-                // 发送提示消息
-                LocalPlayer player = Minecraft.getInstance().player;
-                if (player != null) {
-                    player.displayClientMessage(Component.translatable("text.searchonmcmod.mcmodid_not_found"), false);
-                }
-                return;
-            }
-            if (!optionalItemMCMODID.isPresent()) {
-                return;
-            }
-            String itemMCMODID = optionalItemMCMODID.get();
+    private static void handleSearchFailure(String message, Exception e) {
+        log.error(message, e);
+        showSearchFailedHint();
+    }
 
-            // 6. 如果mcmodItemID为0，则进行搜索
-            if ("0".equals(itemMCMODID)) {
-                // 然后到https://search.mcmod.cn/s?key=%s去搜索
-                MainUtil.openSearchPage(localizedName);
-                return;
-            }
-
-            // 7. 判断物品页面是否存在，如果不存在则进行搜索
-            if (!MainUtil.itemPageExist(itemMCMODID)) {
-                // 然后到https://search.mcmod.cn/s?key=%s去搜索
-                MainUtil.openSearchPage(localizedName);
-                return;
-            }
-
-            // 8. 打开MCMOD的物品页面
-            MainUtil.openItemPage(itemMCMODID);
-        });
+    private static void showSearchFailedHint() {
+        net.minecraft.client.Minecraft minecraft = net.minecraft.client.Minecraft.getInstance();
+        minecraft.execute(() -> net.minecraft.client.gui.components.toasts.SystemToast.addOrUpdate(
+                minecraft.getToasts(),
+                net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.WORLD_ACCESS_FAILURE,
+                net.minecraft.network.chat.Component.translatable("text.searchonmcmod.search_failed"),
+                null
+        ));
     }
 
     /**
