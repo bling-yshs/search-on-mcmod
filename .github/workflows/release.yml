@@ -11,12 +11,20 @@ on:
         description: '跳过版本号检查（确认不使用最新发布版本时勾选）'
         type: boolean
         default: false
-      mc_1_21_1_21_8:
-        description: '发布 1.21-1.21.8 版本'
+      mc_26_1_x:
+        description: '发布 26.1.x 版本'
+        type: boolean
+        default: false
+      mc_1_21_11:
+        description: '发布 1.21.11 版本'
         type: boolean
         default: false
       mc_1_21_9_1_21_10:
         description: '发布 1.21.9-1.21.10 版本'
+        type: boolean
+        default: false
+      mc_1_21_1_21_8:
+        description: '发布 1.21-1.21.8 版本'
         type: boolean
         default: false
       mc_1_20_6:
@@ -83,8 +91,10 @@ jobs:
         id: get-selected-versions
         run: |
           versions=()
-          if [[ "${{ inputs.mc_1_21_1_21_8 }}" == "true" ]]; then versions+=("1.21-1.21.8"); fi
+          if [[ "${{ inputs.mc_26_1_x }}" == "true" ]]; then versions+=("26.1.x"); fi
+          if [[ "${{ inputs.mc_1_21_11 }}" == "true" ]]; then versions+=("1.21.11"); fi
           if [[ "${{ inputs.mc_1_21_9_1_21_10 }}" == "true" ]]; then versions+=("1.21.9-1.21.10"); fi
+          if [[ "${{ inputs.mc_1_21_1_21_8 }}" == "true" ]]; then versions+=("1.21-1.21.8"); fi
           if [[ "${{ inputs.mc_1_20_6 }}" == "true" ]]; then versions+=("1.20.6"); fi
           if [[ "${{ inputs.mc_1_20_x }}" == "true" ]]; then versions+=("1.20.x"); fi
           if [[ "${{ inputs.mc_1_19_x }}" == "true" ]]; then versions+=("1.19.x"); fi
