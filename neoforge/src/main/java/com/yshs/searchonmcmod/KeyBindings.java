@@ -2,7 +2,7 @@ package com.yshs.searchonmcmod;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 
@@ -16,7 +16,7 @@ import static com.yshs.searchonmcmod.SearchOnMcmod.MOD_ID;
 public class KeyBindings {
 
     public static final KeyMapping.Category SEARCHONMCMOD_CATEGORY =
-            new KeyMapping.Category(ResourceLocation.fromNamespaceAndPath(MOD_ID, CATEGORY));
+            new KeyMapping.Category(Identifier.fromNamespaceAndPath(MOD_ID, CATEGORY));
 
     /**
      * 搜索 MC 百科按键

@@ -2,7 +2,7 @@ package com.yshs.searchonmcmod;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
