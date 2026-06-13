@@ -12,11 +12,12 @@ configurations {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.36'
-    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    compileOnly 'org.projectlombok:lombok:1.18.40'
+    annotationProcessor 'org.projectlombok:lombok:1.18.40'
     compileOnly(project(':common')) {
-        capabilities {
-            requireCapability "$group:$mod_id"
+        def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+        attributes {
+            attribute(loaderAttribute, 'common')
         }
     }
     commonJava project(path: ':common', configuration: 'commonJava')

@@ -3,6 +3,10 @@ name: 🛠️ 自动构建 (Commit)
 on:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   commit-build:
     name: 🛠️ 自动构建
@@ -14,7 +18,7 @@ jobs:
       - name: 安装 Gradle (Install Gradle)
         uses: actions/setup-java@v5
         with:
-          java-version: 21
+          java-version: 25
           distribution: liberica
           cache: gradle
 

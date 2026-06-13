@@ -3,7 +3,7 @@ package com.yshs.searchonmcmod;
 import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +27,7 @@ public class SearchOnMcmod implements ModInitializer {
     @Override
     public void onInitialize() {
         // 注册按键绑定
-        KeyBindingHelper.registerKeyBinding(SEARCH_ON_MCMOD_KEY);
+        KeyMappingHelper.registerKeyMapping(SEARCH_ON_MCMOD_KEY);
         // 渲染物品信息时触发
         ItemTooltipCallback.EVENT.register(this::onRenderTooltipEvent);
     }

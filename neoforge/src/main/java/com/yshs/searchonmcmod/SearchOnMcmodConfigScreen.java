@@ -1,6 +1,6 @@
 package com.yshs.searchonmcmod;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
@@ -8,6 +8,9 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * MC 百科搜索 NeoForge 配置屏幕。
+ */
 public class SearchOnMcmodConfigScreen extends Screen {
     private static final int OPTION_WIDTH = 310;
     private static final int DONE_BUTTON_WIDTH = 200;
@@ -16,6 +19,11 @@ public class SearchOnMcmodConfigScreen extends Screen {
     private boolean showSearchingHint;
     private boolean showCopyToClipboardHint;
 
+    /**
+     * 创建配置屏幕。
+     *
+     * @param parent 打开配置屏幕前的上级屏幕
+     */
     public SearchOnMcmodConfigScreen(Screen parent) {
         super(Component.translatable("config.searchonmcmod.title"));
         this.parent = parent;
@@ -23,6 +31,9 @@ public class SearchOnMcmodConfigScreen extends Screen {
         this.showCopyToClipboardHint = SearchOnMcmodConfig.isCopyToClipboardHintEnabled();
     }
 
+    /**
+     * 初始化配置项控件。
+     */
     @Override
     protected void init() {
         int left = (this.width - OPTION_WIDTH) / 2;
@@ -59,6 +70,9 @@ public class SearchOnMcmodConfigScreen extends Screen {
                 .build());
     }
 
+    /**
+     * 关闭配置屏幕并返回上级屏幕。
+     */
     @Override
     public void onClose() {
         if (this.minecraft != null) {
@@ -66,9 +80,17 @@ public class SearchOnMcmodConfigScreen extends Screen {
         }
     }
 
+    /**
+     * 提取配置屏幕渲染状态。
+     *
+     * @param guiGraphicsExtractor GUI 渲染状态提取器
+     * @param mouseX 鼠标 X 坐标
+     * @param mouseY 鼠标 Y 坐标
+     * @param partialTick 局部 tick
+     */
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(@NotNull GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY, float partialTick) {
+        guiGraphicsExtractor.centeredText(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+        super.extractRenderState(guiGraphicsExtractor, mouseX, mouseY, partialTick);
     }
 }
