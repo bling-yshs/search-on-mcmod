@@ -43,5 +43,5 @@ jobs:
       - name: 上传 Forge 构建产物 (Upload Forge artifact)
         uses: actions/upload-artifact@v7
         with:
-          path: build/libs/*.jar
-#          archive: false
+          path: build/libs/searchonmcmod-forge-1.7.10-${{ steps.gradle-build.outputs.version }}.jar
+          archive: false
