@@ -9,8 +9,6 @@ base {
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(java_version)
-    withSourcesJar()
-    withJavadocJar()
 }
 
 repositories {
@@ -46,7 +44,7 @@ repositories {
 
 // Declare capabilities on the outgoing configurations.
 // Read more about capabilities here: https://docs.gradle.org/current/userguide/component_capabilities.html#sec:declaring-additional-capabilities-for-a-local-component
-['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+['apiElements', 'runtimeElements'].each { variant ->
     configurations."$variant".outgoing {
         capability("$group:${base.archivesName.get()}:$version")
         capability("$group:$mod_id-${project.name}-${minecraft_version}:$version")
@@ -54,12 +52,6 @@ repositories {
     }
     publishing.publications.configureEach {
         suppressPomMetadataWarningsFor(variant)
-    }
-}
-
-sourcesJar {
-    from(rootProject.file('LICENSE')) {
-        rename { "${it}_${mod_name}" }
     }
 }
 
