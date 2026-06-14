@@ -7,5 +7,5 @@
   "config.searchonmcmod.show_copy_to_clipboard_hint": "Show a friendly hint after successfully triggering 'Copy item name'",
   "text.searchonmcmod.searching": "Opening MCMOD",
   "text.searchonmcmod.copy_to_clipboard": "Copied to clipboard",
-  "text.searchonmcmod.search_failed": "Failed to open MCMOD, please check your network connection"
+  "text.searchonmcmod.error_see_log": "An error occurred. Please check the log for details"
 }

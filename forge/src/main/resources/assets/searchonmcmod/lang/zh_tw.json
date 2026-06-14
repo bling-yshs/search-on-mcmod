@@ -7,5 +7,5 @@
   "config.searchonmcmod.show_copy_to_clipboard_hint": "成功觸發「複製物品名稱」後，彈出友好提示",
   "text.searchonmcmod.searching": "正在開啟 MC 百科",
   "text.searchonmcmod.copy_to_clipboard": "已複製到剪貼簿",
-  "text.searchonmcmod.search_failed": "開啟 MC 百科失敗，請檢查網路連線"
+  "text.searchonmcmod.error_see_log": "發生錯誤，請查看日誌以取得詳細資訊"
 }

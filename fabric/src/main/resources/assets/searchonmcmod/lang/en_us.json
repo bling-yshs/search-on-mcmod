@@ -2,5 +2,5 @@
   "key.categories.searchonmcmod": "Search on MCMOD",
   "key.searchonmcmod.search_on_mcmod": "Search on MCMOD",
   "key.searchonmcmod.copy_item_name": "Copy item name under cursor",
-  "text.searchonmcmod.search_failed": "Failed to open MCMOD, please check your network connection"
+  "text.searchonmcmod.error_see_log": "An error occurred. Please check the log for details"
 }

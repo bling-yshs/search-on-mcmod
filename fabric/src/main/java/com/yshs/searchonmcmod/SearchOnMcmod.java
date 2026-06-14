@@ -5,13 +5,18 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.COPY_ITEM_NAME_KEY;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
@@ -62,22 +67,46 @@ public class SearchOnMcmod implements ModInitializer {
             return;
         }
         // 得到物品的本地化名称
-        String searchKeyword = itemStack.getHoverName().getString();
-        if (StringUtils.isBlank(searchKeyword)) {
+        String localizedName = itemStack.getHoverName().getString();
+        // 得到物品的注册名
+        Item item = itemStack.getItem();
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) {
+            handleSearchFailure("MC百科搜索: 客户端世界为空，无法获取物品注册名", new IllegalStateException("客户端世界为空"));
             return;
         }
-        try {
-            MainUtil.openSearchPage(searchKeyword);
-        } catch (Exception e) {
-            handleSearchFailure("MC百科搜索: 打开搜索页面失败", e);
+        ResourceLocation id = level.registryAccess().registryOrThrow(Registries.ITEM).getKey(item);
+        if (id == null) {
+            handleSearchFailure("MC百科搜索: 无法获取物品注册名", new IllegalStateException("物品未注册: " + item));
+            return;
         }
+        String registryName = id.toString();
+        CompletableFuture.runAsync(() -> {
+            String itemMCMODID;
+            try {
+                itemMCMODID = MainUtil.fetchItemMCMODID(registryName);
+            } catch (Exception e) {
+                handleSearchFailure("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID", e);
+                return;
+            }
+
+            try {
+                if ("0".equals(itemMCMODID)) {
+                    MainUtil.openSearchPage(localizedName);
+                    return;
+                }
+                MainUtil.openItemPage(itemMCMODID);
+            } catch (Exception e) {
+                handleSearchFailure("MC百科搜索: 打开MC百科页面失败", e);
+            }
+        });
     }
 
     private static void handleSearchFailure(String message, Exception e) {
         log.error(message, e);
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            player.sendSystemMessage(Component.translatable("text.searchonmcmod.search_failed"));
+            player.sendSystemMessage(Component.translatable("text.searchonmcmod.error_see_log"));
         }
     }
 

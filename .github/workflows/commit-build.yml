@@ -3,6 +3,10 @@ name: 🛠️ 自动构建 (Commit)
 on:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   commit-build:
     name: 🛠️ 自动构建
@@ -33,40 +37,17 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "Detected version: ${version}"
 
-      - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
+      - name: 上传 Forge 构建产物 (Upload Forge artifact)
+        uses: actions/upload-artifact@v7
         with:
-          name: neoforge
-          if-no-files-found: ignore
-          path: |
-            neoforge/build/libs/*[0-9].jar
+          path: forge/build/libs/*.jar
+          archive: false
 
-      - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
+      - name: 上传 Fabric 构建产物 (Upload Fabric artifact)
+        uses: actions/upload-artifact@v7
         with:
-          name: forge
-          if-no-files-found: ignore
-          path: |
-            forge/build/libs/*[0-9].jar
-
-      - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
-        with:
-          name: fabric
-          if-no-files-found: ignore
-          path: |
-            fabric/build/libs/*[0-9].jar
-
-      - name: 合并构建产物 (Merge artifacts)
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: merged-artifacts
-
-      - name: 下载 Artifact (Download Artifact)
-        uses: actions/download-artifact@v4
-        with:
-          path: ./download
-          name: merged-artifacts
+          path: fabric/build/libs/*.jar
+          archive: false
 
       - name: 上传编译结果到 Release (Upload build result to Release)
         uses: ncipollo/release-action@v1
@@ -81,4 +62,5 @@ jobs:
           #            ${{ steps.changelog.outputs.compareurl }}
           #            ${{ steps.changelog.outputs.changelog }}
           artifacts: |
-            ./download/*.jar
+            forge/build/libs/*.jar
+            fabric/build/libs/*.jar
