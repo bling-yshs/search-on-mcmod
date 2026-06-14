@@ -12,6 +12,7 @@ const VERSION_MAP: Record<string, string[]> = {
   '1.18.x': ['1.18', '1.18.1', '1.18.2'],
   '1.16.5': ['1.16.5'],
   '1.12.2': ['1.12.2'],
+  '1.7.10': ['1.7.10'],
 }
 
 interface MatrixItem {
