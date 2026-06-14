@@ -7,6 +7,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   commit-build:
     name: 🛠️ 自动构建
@@ -45,3 +48,14 @@ jobs:
         with:
           path: build/libs/searchonmcmod-forge-1.7.10-${{ steps.gradle-build.outputs.version }}.jar
           archive: false
+
+      - name: 上传编译结果到 Release (Upload build result to Release)
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: "v${{ steps.gradle-build.outputs.version }}"
+          prerelease: true
+          allowUpdates: true
+          updateOnlyUnreleased: true
+          omitBodyDuringUpdate: true
+          artifacts: build/libs/searchonmcmod-forge-1.7.10-${{ steps.gradle-build.outputs.version }}.jar
