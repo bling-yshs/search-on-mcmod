@@ -3,6 +3,10 @@ name: 🛠️ 自动构建 (Commit)
 on:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   commit-build:
     name: 🛠️ 自动构建
@@ -37,18 +41,13 @@ jobs:
           echo "version=$(python .github/scripts/parse_version.py)" >> $GITHUB_OUTPUT
 
       - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: merged-artifacts
+          name: forge
+          archive: false
           if-no-files-found: ignore
           path: |
-            build/libs/*[0-9].jar
-
-      - name: 下载 Artifact (Download Artifact)
-        uses: actions/download-artifact@v4
-        with:
-          path: ./download
-          name: merged-artifacts
+            build/libs/*.jar
 
       - name: 上传编译结果到 Release (Upload build result to Release)
         uses: ncipollo/release-action@v1
@@ -63,5 +62,4 @@ jobs:
           #            ${{ steps.changelog.outputs.compareurl }}
           #            ${{ steps.changelog.outputs.changelog }}
           artifacts: |
-            ./download/*.jar
-
+            build/libs/*.jar
