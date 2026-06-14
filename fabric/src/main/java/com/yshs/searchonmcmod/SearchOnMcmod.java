@@ -4,12 +4,19 @@ import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
@@ -23,6 +30,9 @@ public class SearchOnMcmod implements ModInitializer {
      */
     public static boolean keyDown = false;
 
+    /**
+     * 初始化 MOD
+     */
     @Override
     public void onInitialize() {
         // 注册按键绑定
@@ -46,16 +56,55 @@ public class SearchOnMcmod implements ModInitializer {
         if (itemStack.isEmpty()) {
             return;
         }
-        // 得到物品的本地化名称
-        String searchKeyword = itemStack.getHoverName().getString();
-        if (StringUtils.isBlank(searchKeyword)) {
+        Item item = itemStack.getItem();
+        ResourceLocation id = Registry.ITEM.getKey(item);
+        if (id == null) {
+            log.warn("无法获取物品注册名");
+            handleSearchFailure();
             return;
         }
-        try {
-            MainUtil.openSearchPage(searchKeyword);
-        } catch (Exception e) {
-            log.error("MC百科搜索: 打开搜索页面失败", e);
-        }
+
+        String registryName = id.toString();
+        log.info("物品注册名: {}", registryName);
+
+        // 得到物品的本地化名称
+        String localizedName = itemStack.getHoverName().getString();
+
+        CompletableFuture.runAsync(() -> {
+            String itemMCMODID;
+            try {
+                itemMCMODID = MainUtil.fetchItemMCMODID(registryName);
+            } catch (Exception e) {
+                log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
+                handleSearchFailure();
+                return;
+            }
+
+            if ("0".equals(itemMCMODID)) {
+                log.warn("API 返回 ID 为 0，回退到搜索页面");
+                if (StringUtils.isBlank(localizedName)) {
+                    handleSearchFailure();
+                    return;
+                }
+                MainUtil.openSearchPage(localizedName);
+                return;
+            }
+
+            MainUtil.openItemPage(itemMCMODID);
+        });
+    }
+
+    /**
+     * 显示通用错误提示
+     */
+    private static void handleSearchFailure() {
+        Minecraft minecraft = Minecraft.getInstance();
+        minecraft.execute(() -> {
+            LocalPlayer player = minecraft.player;
+            if (player != null) {
+                player.displayClientMessage(new TranslatableComponent("text.searchonmcmod.error_see_log"), false);
+            }
+        });
     }
 
 }
