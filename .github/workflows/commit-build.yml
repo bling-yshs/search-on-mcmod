@@ -1,0 +1,47 @@
+name: 🛠️ 自动构建 (Commit)
+
+on:
+  push:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commit-build:
+    name: 🛠️ 自动构建
+    runs-on: ubuntu-22.04
+    steps:
+      - name: 克隆当前仓库 (Clone current repo)
+        uses: actions/checkout@v6
+
+      - name: 安装 Gradle (Install Gradle)
+        uses: actions/setup-java@v5
+        with:
+          java-version: |
+            8
+            17
+            25
+          distribution: zulu
+          cache: gradle
+
+      - name: 给予 Gradle 包装器执行权限 (Grant execute permission for gradlew)
+        run: chmod +x gradlew
+
+      - name: 构建项目 (Build project)
+        id: gradle-build
+        run: |
+          ./gradlew build --no-daemon
+          version="$(./gradlew -q printModVersion --no-daemon)"
+          if [[ -z "${version}" ]]; then
+            echo "::error::无法从 printModVersion 任务读取 version，流程终止。"
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Detected version: ${version}"
+
+      - name: 上传 Forge 构建产物 (Upload Forge artifact)
+        uses: actions/upload-artifact@v7
+        with:
+          path: build/libs/*.jar
+#          archive: false
