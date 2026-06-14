@@ -3,16 +3,23 @@ name: 🛠️ 自动构建 (Commit)
 on:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
 jobs:
   commit-build:
     name: 🛠️ 自动构建
     runs-on: ubuntu-22.04
     steps:
       - name: 克隆当前仓库 (Clone current repo)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 安装 Gradle (Install Gradle)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 25
           distribution: liberica
@@ -25,21 +32,21 @@ jobs:
         id: gradle-build
         run: |
           ./gradlew build --no-daemon
-          echo "version=$(./gradlew -q printModVersion --no-daemon)" >> $GITHUB_OUTPUT
+          version="$(./gradlew -q printModVersion --no-daemon)"
+          if [[ -z "${version}" ]]; then
+            echo "::error::无法从 printModVersion 任务读取 version，流程终止。"
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Detected version: ${version}"
 
       - name: 上传构建产物 (Upload artifacts)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: merged-artifacts
+          name: forge
+          archive: false
           if-no-files-found: ignore
-          path: |
-            build/libs/*[0-9].jar
-
-      - name: 下载 Artifact (Download Artifact)
-        uses: actions/download-artifact@v4
-        with:
-          path: ./download
-          name: merged-artifacts
+          path: build/libs/searchonmcmod-forge-1.12.2-${{ steps.gradle-build.outputs.version }}.jar
 
       - name: 上传编译结果到 Release (Upload build result to Release)
         uses: ncipollo/release-action@v1
@@ -53,5 +60,4 @@ jobs:
           #          body: |
           #            ${{ steps.changelog.outputs.compareurl }}
           #            ${{ steps.changelog.outputs.changelog }}
-          artifacts: |
-            ./download/*.jar
+          artifacts: build/libs/searchonmcmod-forge-1.12.2-${{ steps.gradle-build.outputs.version }}.jar

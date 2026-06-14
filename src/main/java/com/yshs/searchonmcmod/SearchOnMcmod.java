@@ -1,16 +1,23 @@
 package com.yshs.searchonmcmod;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.Minecraft;
+import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
+
+import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.COPY_ITEM_NAME_KEY;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
@@ -66,16 +73,52 @@ public class SearchOnMcmod {
         if (event.getItemStack().isEmpty()) {
             return;
         }
+        Item item = event.getItemStack().getItem();
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
+        if (id == null) {
+            log.warn("无法获取物品注册名");
+            handleSearchFailure();
+            return;
+        }
+
+        String registryName = id.toString();
+        log.info("物品注册名: {}", registryName);
 
         // 得到物品的本地化名称
         if (StringUtils.isBlank(localizedName)) {
             return;
         }
-        try {
-            MainUtil.openSearchPage(localizedName);
-        } catch (Exception e) {
-            log.error("MC百科搜索: 打开搜索页面失败", e);
-        }
+
+        CompletableFuture.runAsync(() -> {
+            String itemMCMODID;
+            try {
+                itemMCMODID = MainUtil.fetchItemMCMODID(registryName);
+            } catch (Exception e) {
+                log.error("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID，请检查您的网络情况", e);
+                handleSearchFailure();
+                return;
+            }
+
+            if ("0".equals(itemMCMODID)) {
+                log.warn("API 返回 ID 为 0，回退到搜索页面");
+                MainUtil.openSearchPage(localizedName);
+                return;
+            }
+
+            MainUtil.openItemPage(itemMCMODID);
+        });
+    }
+
+    /**
+     * 显示通用错误提示
+     */
+    private static void handleSearchFailure() {
+        Minecraft minecraft = Minecraft.getMinecraft();
+        minecraft.addScheduledTask(() -> {
+            if (minecraft.player != null) {
+                minecraft.player.sendMessage(new TextComponentTranslation("text.searchonmcmod.error_see_log"));
+            }
+        });
     }
 
     // 键位状态机依赖按键事件的下压/释放状态来保证一次按压只触发一次动作。

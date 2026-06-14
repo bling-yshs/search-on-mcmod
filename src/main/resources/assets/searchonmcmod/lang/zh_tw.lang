@@ -1,3 +1,4 @@
 key.categories.searchonmcmod=Search on MCMOD
 key.searchonmcmod.search_on_mcmod=在 MC百科 中搜尋
 key.searchonmcmod.copy_item_name=複製滑鼠指標下方的物品名稱
+text.searchonmcmod.error_see_log=發生錯誤，請查看日誌以取得詳細資訊
