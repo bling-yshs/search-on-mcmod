@@ -7,5 +7,5 @@
   "config.searchonmcmod.show_copy_to_clipboard_hint": "显示「已复制到剪贴板」提示",
   "text.searchonmcmod.searching": "正在打开 MC 百科",
   "text.searchonmcmod.copy_to_clipboard": "已复制到剪贴板",
-  "text.searchonmcmod.search_failed": "打开 MC 百科失败，请检查网络连接"
+  "text.searchonmcmod.error_see_log": "发生错误，请查看日志获取详细信息"
 }
