@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -19,6 +22,8 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.concurrent.CompletableFuture;
 
 import static com.yshs.searchonmcmod.KeyBindings.COPY_ITEM_NAME_KEY;
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
@@ -78,16 +83,29 @@ public class SearchOnMcmod {
             return;
         }
 
-        String searchKeyword = localizedName;
-        if (StringUtils.isBlank(searchKeyword)) {
-            return;
-        }
+        // 得到物品的注册名
+        Item item = event.getItemStack().getItem();
+        Identifier id = BuiltInRegistries.ITEM.getKey(item);
+        String registryName = id.toString();
+        CompletableFuture.runAsync(() -> {
+            String itemMCMODID;
+            try {
+                itemMCMODID = MainUtil.fetchItemMCMODID(registryName);
+            } catch (Exception e) {
+                handleSearchFailure("MC 百科搜索: 无法通过百科 API 获取物品 MCMOD ID", e);
+                return;
+            }
 
-        try {
-            MainUtil.openSearchPage(searchKeyword);
-        } catch (Exception e) {
-            handleSearchFailure("MC 百科搜索: 打开搜索页面失败", e);
-        }
+            try {
+                if ("0".equals(itemMCMODID)) {
+                    MainUtil.openSearchPage(localizedName);
+                    return;
+                }
+                MainUtil.openItemPage(itemMCMODID);
+            } catch (Exception e) {
+                handleSearchFailure("MC 百科搜索: 打开 MC 百科页面失败", e);
+            }
+        });
     }
 
     /**
@@ -182,18 +200,20 @@ public class SearchOnMcmod {
         showToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.translatable("text.searchonmcmod.copy_to_clipboard"));
     }
 
-    private static void showSearchFailedHint() {
-        showToast(SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("text.searchonmcmod.search_failed"));
-    }
-
     private static void showToast(SystemToast.SystemToastId id, Component message) {
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.execute(() -> SystemToast.addOrUpdate(minecraft.getToastManager(), id, message, null));
     }
 
+    /**
+     * 处理 MC 百科搜索失败
+     *
+     * @param message 日志消息
+     * @param e       异常
+     */
     private static void handleSearchFailure(String message, Exception e) {
         log.error(message, e);
-        showSearchFailedHint();
+        showToast(SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("text.searchonmcmod.error_see_log"));
     }
 
     private enum KeyPressState {
