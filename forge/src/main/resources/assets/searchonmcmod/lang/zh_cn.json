@@ -1,5 +1,5 @@
 {
   "key.categories.searchonmcmod": "Search on MCMOD",
   "key.searchonmcmod.search_on_mcmod": "在 MC百科 中搜索",
-  "text.searchonmcmod.search_failed": "打开 MC 百科失败，请检查网络连接"
+  "text.searchonmcmod.error_see_log": "发生错误，请查看日志获取详细信息"
 }

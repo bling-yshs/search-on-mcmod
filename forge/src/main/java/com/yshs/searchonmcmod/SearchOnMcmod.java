@@ -1,11 +1,9 @@
 package com.yshs.searchonmcmod;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -13,11 +11,10 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.apache.commons.lang3.StringUtils;
+import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.yshs.searchonmcmod.KeyBindings.SEARCH_ON_MCMOD_KEY;
 
@@ -47,7 +44,6 @@ public class SearchOnMcmod {
      * @param event 物品tooltip事件，渲染物品信息时触发
      */
     @SubscribeEvent
-    @SneakyThrows
     public void onRenderTooltipEvent(ItemTooltipEvent event) {
         // 检查是否按下快捷键且还未触发过搜索
         if (!keyPressedFlag.get() || hasTriggeredSearch.get()) {
@@ -60,15 +56,34 @@ public class SearchOnMcmod {
             return;
         }
         // 得到物品的本地化名称
-        String searchKeyword = event.getItemStack().getHoverName().getString();
-        if (StringUtils.isBlank(searchKeyword)) {
+        String localizedName = event.getItemStack().getHoverName().getString();
+        // 得到物品的注册名
+        Item item = event.getItemStack().getItem();
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
+        if (id == null) {
+            handleSearchFailure("MC百科搜索: 无法获取物品注册名", new IllegalStateException("物品未注册: " + item));
             return;
         }
-        try {
-            MainUtil.openSearchPage(searchKeyword);
-        } catch (Exception e) {
-            handleSearchFailure("MC百科搜索: 打开搜索页面失败", e);
-        }
+        String registryName = id.toString();
+        CompletableFuture.runAsync(() -> {
+            String itemMCMODID;
+            try {
+                itemMCMODID = MainUtil.fetchItemMCMODID(registryName);
+            } catch (Exception e) {
+                handleSearchFailure("MC百科搜索: 无法通过百科 API 获取物品 MCMOD ID", e);
+                return;
+            }
+
+            try {
+                if ("0".equals(itemMCMODID)) {
+                    MainUtil.openSearchPage(localizedName);
+                    return;
+                }
+                MainUtil.openItemPage(itemMCMODID);
+            } catch (Exception e) {
+                handleSearchFailure("MC百科搜索: 打开 MC 百科页面失败", e);
+            }
+        });
     }
 
     private static void handleSearchFailure(String message, Exception e) {
@@ -81,7 +96,7 @@ public class SearchOnMcmod {
         minecraft.execute(() -> net.minecraft.client.gui.components.toasts.SystemToast.addOrUpdate(
                 minecraft.getToasts(),
                 net.minecraft.client.gui.components.toasts.SystemToast.SystemToastId.WORLD_ACCESS_FAILURE,
-                net.minecraft.network.chat.Component.translatable("text.searchonmcmod.search_failed"),
+                net.minecraft.network.chat.Component.translatable("text.searchonmcmod.error_see_log"),
                 null
         ));
     }
