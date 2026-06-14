@@ -53,9 +53,13 @@ function parseFilename(filename: string): MatrixItem | null {
 
 function main() {
   // 获取选中的版本列表
-  const selectedVersions = (process.env.GITHUB_SELECTED_VERSIONS || '').split(',')
+  const selectedVersions = (process.env.GITHUB_SELECTED_VERSIONS || '')
+    .split(',')
+    .map(version => version.trim())
+    .filter(Boolean)
 
   const matrix: MatrixItem[] = []
+  const matchedVersions = new Set<string>()
   const releaseAssetsPath = '../../release_assets'
 
   try {
@@ -71,9 +75,17 @@ function main() {
           // 只添加选中版本的文件
           if (selectedVersions.some(version => meta.mc_version === version)) {
             matrix.push(meta)
+            matchedVersions.add(meta.mc_version)
           }
         }
       }
+    }
+
+    // 所有选中的版本都必须有对应的 Release 文件，避免只发布部分版本
+    const missingVersions = selectedVersions.filter(version => !matchedVersions.has(version))
+    if (missingVersions.length > 0) {
+      console.error(`Missing release assets for selected versions: ${missingVersions.join(',')}`)
+      process.exit(1)
     }
   }
   catch (error) {
