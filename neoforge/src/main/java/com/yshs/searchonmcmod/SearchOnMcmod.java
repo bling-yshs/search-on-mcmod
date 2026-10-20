@@ -113,25 +113,25 @@ public class SearchOnMcmod {
     }
 
     /**
-     * 处理按键按下事件，并更新按键状态标记。
+     * 根据 SDL 物理键码处理按键按下事件，并更新按键状态标记。
      *
      * @param event NeoForge 屏幕事件总线中的按键按下事件
      */
     @SubscribeEvent
     public void onKeyPressed(ScreenEvent.KeyPressed.Post event) {
-        InputConstants.Key inputKey = InputConstants.Type.KEYSYM.getOrCreate(event.getKeyCode());
+        InputConstants.Key inputKey = InputConstants.Type.KEYBOARD.getOrCreate(event.getKey());
         searchKeyState = markPressed(inputKey, SEARCH_ON_MCMOD_KEY, searchKeyState);
         copyNameKeyState = markPressed(inputKey, COPY_ITEM_NAME_KEY, copyNameKeyState);
     }
 
     /**
-     * 处理按键释放事件，并重置按键状态标记。
+     * 根据 SDL 物理键码处理按键释放事件，并重置按键状态标记。
      *
      * @param event NeoForge 屏幕事件总线中的按键释放事件
      */
     @SubscribeEvent
     public void onKeyReleased(ScreenEvent.KeyReleased.Post event) {
-        InputConstants.Key inputKey = InputConstants.Type.KEYSYM.getOrCreate(event.getKeyCode());
+        InputConstants.Key inputKey = InputConstants.Type.KEYBOARD.getOrCreate(event.getKey());
         searchKeyState = markReleased(inputKey, SEARCH_ON_MCMOD_KEY, searchKeyState);
         copyNameKeyState = markReleased(inputKey, COPY_ITEM_NAME_KEY, copyNameKeyState);
     }

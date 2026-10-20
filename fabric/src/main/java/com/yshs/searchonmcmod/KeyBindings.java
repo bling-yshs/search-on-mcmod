@@ -19,7 +19,7 @@ public class KeyBindings {
 
     public static final KeyMapping SEARCH_ON_MCMOD_KEY = new KeyMapping(
             SEARCH_KEY_NAME,
-            InputConstants.Type.KEYSYM,
+            InputConstants.Type.KEYBOARD,
             SEARCH_DEFAULT_KEY_CODE,
             KEY_CATEGORY
     );

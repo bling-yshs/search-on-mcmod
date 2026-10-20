@@ -1,14 +1,15 @@
 package com.yshs.searchonmcmod;
 
+import com.mojang.blaze3d.Blaze3D;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import net.minecraft.util.Util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -48,7 +49,7 @@ public class MainUtil {
         String encode = URLEncoder.encode(name, StandardCharsets.UTF_8);
         String url = String.format(SEARCH_PAGE_URL, encode);
         log.info("打开MC百科搜索页面: {}", url);
-        Util.getPlatform().openUri(url);
+        Blaze3D.openUri(URI.create(url));
     }
 
     /**
@@ -59,7 +60,7 @@ public class MainUtil {
     public static void openItemPage(@NonNull String id) {
         String url = String.format(ITEM_PAGE_URL, id);
         log.info("打开MC百科物品页面: {}", url);
-        Util.getPlatform().openUri(url);
+        Blaze3D.openUri(URI.create(url));
     }
 
     /**

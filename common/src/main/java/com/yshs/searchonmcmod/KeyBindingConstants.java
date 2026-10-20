@@ -1,6 +1,6 @@
 package com.yshs.searchonmcmod;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 /**
  * 按键绑定常量类
@@ -26,12 +26,12 @@ public class KeyBindingConstants {
     /**
      * 搜索默认按键码 (B 键)
      */
-    public static final int SEARCH_DEFAULT_KEY_CODE = GLFW.GLFW_KEY_B;
+    public static final int SEARCH_DEFAULT_KEY_CODE = InputConstants.KEY_B;
 
     /**
      * 复制名称默认按键码（默认未绑定）
      */
-    public static final int COPY_ITEM_NAME_DEFAULT_KEY_CODE = GLFW.GLFW_KEY_UNKNOWN;
+    public static final int COPY_ITEM_NAME_DEFAULT_KEY_CODE = InputConstants.UNKNOWN.getValue();
 
     private KeyBindingConstants() {
         // 工具类，禁止实例化

@@ -25,7 +25,7 @@ public class KeyBindings {
             SEARCH_KEY_NAME,
             KeyConflictContext.GUI,
             KeyModifier.NONE,
-            InputConstants.Type.KEYSYM,
+            InputConstants.Type.KEYBOARD,
             SEARCH_DEFAULT_KEY_CODE,
             SEARCHONMCMOD_CATEGORY
     );
@@ -37,7 +37,7 @@ public class KeyBindings {
             COPY_ITEM_NAME_KEY_NAME,
             KeyConflictContext.GUI,
             KeyModifier.NONE,
-            InputConstants.Type.KEYSYM,
+            InputConstants.Type.KEYBOARD,
             COPY_ITEM_NAME_DEFAULT_KEY_CODE,
             SEARCHONMCMOD_CATEGORY
     );
