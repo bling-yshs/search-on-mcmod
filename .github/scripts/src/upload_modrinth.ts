@@ -2,6 +2,8 @@ import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 const VERSION_MAP: Record<string, string[]> = {
+  '26.3': ['26.3'],
+  '26.2': ['26.2'],
   '26.1.x': ['26.1', '26.1.1', '26.1.2'],
   '1.21.11': ['1.21.11'],
   '1.21.9-1.21.10': ['1.21.9', '1.21.10'],
