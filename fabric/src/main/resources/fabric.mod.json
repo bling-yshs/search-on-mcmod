@@ -23,7 +23,9 @@
         "searchonmcmod.fabric.mixins.json"
     ],
     "depends": {
-        "fabricloader": "*",
+        "fabricloader": ">=${fabric_loader_version}",
+        "fabric-api": "*",
+        "minecraft": ">=${minecraft_version} <26.3",
         "java": ">=${java_version}"
     },
     "suggests": {

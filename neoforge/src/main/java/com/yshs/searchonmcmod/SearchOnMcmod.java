@@ -204,9 +204,15 @@ public class SearchOnMcmod {
         showToast(SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.translatable("text.searchonmcmod.copy_to_clipboard"));
     }
 
+    /**
+     * 在客户端主线程显示或更新提示。
+     *
+     * @param id 提示类型
+     * @param message 提示内容
+     */
     private static void showToast(SystemToast.SystemToastId id, Component message) {
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.execute(() -> SystemToast.addOrUpdate(minecraft.getToastManager(), id, message, null));
+        minecraft.execute(() -> SystemToast.addOrUpdate(minecraft.gui.toastManager(), id, message, null));
     }
 
     /**

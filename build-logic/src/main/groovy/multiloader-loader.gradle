@@ -38,3 +38,4 @@ tasks.named('javadoc', Javadoc).configure {
     dependsOn(configurations.commonJava)
     source(configurations.commonJava)
 }
+
