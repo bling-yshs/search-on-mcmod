@@ -1,11 +1,9 @@
 package com.yshs.searchonmcmod;
 
-import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 
@@ -153,22 +151,13 @@ public class MainUtil {
     }
 
     /**
-     * 打开 URI（使用 Desktop API）
+     * 打开 URI：优先使用 Desktop API，不可用时回退到系统命令
      *
      * @param uriStr URI 字符串
      */
     private static void openUri(String uriStr) {
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop desktop = Desktop.getDesktop();
-                if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                    desktop.browse(new URI(uriStr));
-                    return;
-                }
-            }
-            LOG.error("当前系统不支持打开浏览器");
-        } catch (Exception e) {
-            LOG.error("打开浏览器失败", e);
+        if (!BrowserLauncher.open(uriStr)) {
+            LOG.error("打开浏览器失败: {}", uriStr);
         }
     }
 }
